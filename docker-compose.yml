@@ -1,0 +1,21 @@
+version: '3'
+services:
+  bookstore:
+    build: ./
+    ports:
+      - 8080:8080
+    depends_on:
+      - database
+    environment:
+      PORT: 8080
+
+  database:
+    image: "postgres" 
+    env_file:
+      - database.env 
+    volumes:
+      - database-data:/var/lib/postgresql/data/
+    ports:
+      - 5432:5432 
+volumes:
+  database-data:
