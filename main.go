@@ -1,23 +1,16 @@
 package main
 
 import (
-	"time"
 
 	// "net/http"
 	// "os"
 
 	// "github.com/gorilla/mux"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
-)
 
-type Book struct {
-	Id          string    `gorm:"primary_key" json:"id"`
-	Created_at  time.Time `gorm:"default:current_timestamp"`
-	Name        string    `json:"name"`
-	Price       float64   `json:"price"`
-	Description string    `json:"desc"`
-}
+	"fmt"
+
+	db "github.com/Onelvay/docker-compose-project/database"
+)
 
 // func homePage(w http.ResponseWriter, r *http.Request) {
 
@@ -26,11 +19,13 @@ type Book struct {
 // }
 
 func main() {
-	dsn := "host=localhost user=postgres password=Adg12332, dbname=bookstore port=5432 sslmode=disable TimeZone=Asia/Shanghai"
-	Db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
-	if err != nil {
-		panic(err)
-	}
+	// res, ans := db.GetBookById("d2222")
+	// fmt.Println(res, ans)
+
+	// res := db.GetBooks()
+	// fmt.Println(res)
+	// db.DeleteBookById("11")
+	fmt.Println(db.GetBooksByName("asd"))
 	// var book Book
 	// var books []Book
 	// Db.Raw("SELECT * FROM books LIMIT 1").Scan(&book) //vse knigi limit ybrat'
