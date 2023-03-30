@@ -8,8 +8,9 @@ import (
 	// "github.com/gorilla/mux"
 
 	"fmt"
+	"net/http"
 
-	db "github.com/Onelvay/docker-compose-project/database"
+	"github.com/Onelvay/docker-compose-project/pkg/server"
 )
 
 // func homePage(w http.ResponseWriter, r *http.Request) {
@@ -19,11 +20,17 @@ import (
 // }
 
 func main() {
+	cnt := server.NewController()
+	router := server.InitRoutes(cnt)
+	err := http.ListenAndServe(":8080", router)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
 	// res, ans := db.GetBookById("d2222")
 	// fmt.Println(res, ans)
-	for _, i := range db.GetBooks(false) {
-		fmt.Println(i.Price)
-	}
+	// for _, i := range db.GetBooks(false) {
+	// 	fmt.Println(i.Price)
+	// }
 	// res := db.GetBooks()
 	// fmt.Println(res)
 	// db.DeleteBookById("11")

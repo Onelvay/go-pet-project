@@ -3,7 +3,7 @@ package database
 import (
 	"strings"
 
-	mdl "github.com/Onelvay/docker-compose-project/models"
+	mdl "github.com/Onelvay/docker-compose-project/pkg/model"
 	"github.com/google/uuid"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
