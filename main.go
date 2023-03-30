@@ -21,11 +21,15 @@ import (
 func main() {
 	// res, ans := db.GetBookById("d2222")
 	// fmt.Println(res, ans)
-
+	for _, i := range db.GetBooks(false) {
+		fmt.Println(i.Price)
+	}
 	// res := db.GetBooks()
 	// fmt.Println(res)
 	// db.DeleteBookById("11")
-	fmt.Println(db.GetBooksByName("asd"))
+	// fmt.Println(db.GetBooksByName("asd"))
+	// db.CreateBook("abay", 123123, "asdass")
+	// fmt.Println(db.GetBookById("2b5bbd2af3124deca650296428cb36a1"))
 	// var book Book
 	// var books []Book
 	// Db.Raw("SELECT * FROM books LIMIT 1").Scan(&book) //vse knigi limit ybrat'
