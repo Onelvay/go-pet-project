@@ -5,18 +5,22 @@ import (
 	"github.com/gorilla/mux"
 )
 
-type Controller struct {
-	services *service.Service
-}
-
-func NewController(services *service.Service) *Controller {
-	return &Controller{services: services}
-}
-
-func InitRoutes(c *Controller) *mux.Router {
+func InitRoutes() *mux.Router {
 	router := mux.NewRouter().StrictSlash(true)
-	router.HandleFunc("/", c.services.HomePage)
-	// books := router.PathPrefix("/books").Subrouter()
-	// books.HandleFunc("/{id}", c.services.HomePage)
+
+	books := router.PathPrefix("/books").Subrouter()
+
+	books.HandleFunc("/", service.GetBooks).Methods("GET")
+
+	books.HandleFunc("/{id}", service.GetBookById).Methods("GET")
+
+	books.HandleFunc("/{id}", service.UpdateBook).Methods("PUT")
+
+	books.HandleFunc("/{id}", service.DeleteBookById).Methods("DELETE")
+
+	router.HandleFunc("/create", service.CreateBook).Methods("POST")
+
+	router.HandleFunc("/search", service.GetBooksByName).Methods("GET")
+
 	return router
 }

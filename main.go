@@ -9,20 +9,18 @@ import (
 
 	"fmt"
 	"net/http"
+	"os"
 
 	"github.com/Onelvay/docker-compose-project/pkg/server"
 )
 
-// func homePage(w http.ResponseWriter, r *http.Request) {
-
-// 	fmt.Println("asdasd")
-// 	fmt.Fprintf(w, "this is homepage")
-// }
-
 func main() {
-	cnt := server.NewController()
-	router := server.InitRoutes(cnt)
-	err := http.ListenAndServe(":8080", router)
+	router := server.InitRoutes()
+	var PORT string
+	if PORT = os.Getenv("PORT"); PORT == "" {
+		PORT = "8080"
+	}
+	err := http.ListenAndServe(":"+PORT, router)
 	if err != nil {
 		fmt.Println(err.Error())
 	}
@@ -46,15 +44,5 @@ func main() {
 	// Db.Where("id = ?", "D2222").First(&book)
 	// fmt.Println(books)
 	// Db.Where("id=?", "D2212").Delete(&book)
-	// var PORT string
-	// if PORT = os.Getenv("PORT"); PORT == "" {
-	// 	PORT = "8080"
-	// }
-	// router := mux.NewRouter().StrictSlash(true)
-	// router.HandleFunc("/", homePage)
-	// err := http.ListenAndServe(":"+PORT, router)
-	// if err != nil {
-	// 	fmt.Println(err.Error())
-	// }
 
 }

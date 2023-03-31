@@ -1,7 +1,10 @@
 package service
 
 type Handlers interface {
-	HomePage()
+	GetBooks()
+	GetBookById()
+	GetBookByName()
+	DeleteBookById()
 }
 
 type Service struct {

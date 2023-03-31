@@ -15,7 +15,7 @@ var book mdl.Book
 var books []mdl.Book
 
 func init() {
-	dsn := "host=localhost user=postgres password=Adg12332, dbname=bookstore port=5432 sslmode=disable TimeZone=Asia/Shanghai"
+	dsn := "host=database user=postgres password=Adg12332, dbname=bookstore port=5432 sslmode=disable TimeZone=Asia/Shanghai"
 	Db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		panic(err)
@@ -30,7 +30,7 @@ func GetBookById(id string) (mdl.Book, bool) {
 	return book, true
 }
 func GetBooksByName(name string) ([]mdl.Book, bool) {
-	res := Db.First(&books, "name = ?", name)
+	res := Db.Where("name = ?", name).Find(&books)
 	if res.RowsAffected == 0 {
 		return []mdl.Book{}, false
 	}
@@ -66,19 +66,18 @@ func CreateBook(name string, price float64, descr string) bool {
 	return false
 }
 
-func UpdateNameOfBook(id string, name string) bool {
-	res := Db.First(book, "id = ?", id)
-	if res.RowsAffected == 1 {
-		book.Name = name
-		Db.Save(&book)
-		return true
-	}
-	return false
-}
-func UpdateDescrOfBook(id string, descr string) bool {
-	res := Db.First(book, "id = ?", id)
-	if res.RowsAffected == 1 {
-		book.Description = descr
+func UpdateBook(id string, name string, desc string, price float64) bool {
+	_, res := GetBookById(id)
+	if res {
+		if name != "" {
+			book.Name = name
+		}
+		if desc != "" {
+			book.Description = desc
+		}
+		if price != 0 {
+			book.Price = price
+		}
 		Db.Save(&book)
 		return true
 	}
