@@ -1,7 +1,7 @@
 package server
 
 import (
-	"github.com/Onelvay/docker-compose-project/pkg/service"
+	rest "github.com/Onelvay/docker-compose-project/pkg/rest"
 	"github.com/gorilla/mux"
 )
 
@@ -10,17 +10,17 @@ func InitRoutes() *mux.Router {
 
 	books := router.PathPrefix("/books").Subrouter()
 
-	books.HandleFunc("/", service.GetBooks).Methods("GET")
+	books.HandleFunc("/", rest.GetBooks).Methods("GET")
 
-	books.HandleFunc("/{id}", service.GetBookById).Methods("GET")
+	books.HandleFunc("/{id}", rest.GetBookById).Methods("GET")
 
-	books.HandleFunc("/{id}", service.UpdateBook).Methods("PUT")
+	books.HandleFunc("/{id}", rest.UpdateBook).Methods("PUT")
 
-	books.HandleFunc("/{id}", service.DeleteBookById).Methods("DELETE")
+	books.HandleFunc("/{id}", rest.DeleteBookById).Methods("DELETE")
 
-	router.HandleFunc("/create", service.CreateBook).Methods("POST")
+	router.HandleFunc("/create", rest.CreateBook).Methods("POST")
 
-	router.HandleFunc("/search", service.GetBooksByName).Methods("GET")
+	router.HandleFunc("/search", rest.GetBooksByName).Methods("GET")
 
 	return router
 }

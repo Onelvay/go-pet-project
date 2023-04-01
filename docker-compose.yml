@@ -12,7 +12,7 @@ services:
   database:
     image: "postgres" 
     env_file:
-      - database/database.env 
+      - ./database/database.env 
     volumes:
       - database-data:/var/lib/postgresql/data/
     ports:
