@@ -3,10 +3,13 @@ package main
 import (
 	"fmt"
 	"log"
+	"net/http"
+	"os"
 
 	// "io/ioutil"
 
 	mdl "github.com/Onelvay/docker-compose-project/pkg/model"
+	"github.com/Onelvay/docker-compose-project/pkg/server"
 	"github.com/spf13/viper"
 
 	// yaml "gopkg.in/yaml.v3"
@@ -25,17 +28,16 @@ func main() {
 		viper.GetString("db.pass"),
 	)
 	db.NewPostgresDb(*config)
-	fmt.Println(db.GetBooks(true))
 
-	// router := server.InitRoutes()
-	// var PORT string
-	// if PORT = os.Getenv("PORT"); PORT == "" {
-	// 	PORT = "8080"
-	// }
-	// err := http.ListenAndServe(":"+PORT, router)
-	// if err != nil {
-	// 	fmt.Println(err.Error())
-	// }
+	router := server.InitRoutes()
+	var PORT string
+	if PORT = os.Getenv("PORT"); PORT == "" {
+		PORT = "8080"
+	}
+	err := http.ListenAndServe(":"+PORT, router)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
 
 }
 

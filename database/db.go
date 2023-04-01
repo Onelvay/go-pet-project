@@ -15,17 +15,13 @@ var err error
 var book mdl.Book
 var books []mdl.Book
 
-//	func init() {
-//		dsn := "host=database user=postgres password=Adg12332, dbname=bookstore port=5432 sslmode=disable TimeZone=Asia/Shanghai"
-//		Db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
-//		if err != nil {
-//			panic(err)
-//		}
-//	}
 func NewPostgresDb(cfg mdl.Config) {
 	dsn := fmt.Sprintf("host=%s port=%s user=%s dbname=%s password=%s sslmode=disable",
 		cfg.HOST, cfg.PORT, cfg.USER, cfg.DB_NAME, cfg.PASS)
 	Db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	if err != nil {
+		panic(err)
+	}
 }
 
 func GetBookById(id string) (mdl.Book, bool) {
