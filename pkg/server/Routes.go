@@ -5,22 +5,22 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func InitRoutes() *mux.Router {
+func InitRoutes(f *rest.HandleFunctions) *mux.Router {
 	router := mux.NewRouter().StrictSlash(true)
 
 	books := router.PathPrefix("/books").Subrouter()
 
-	books.HandleFunc("/", rest.GetBooks).Methods("GET")
+	books.HandleFunc("/", f.GetBooks).Methods("GET")
 
-	books.HandleFunc("/{id}", rest.GetBookById).Methods("GET")
+	books.HandleFunc("/{id}", f.GetBookById).Methods("GET")
 
-	books.HandleFunc("/{id}", rest.UpdateBook).Methods("PUT")
+	books.HandleFunc("/{id}", f.UpdateBook).Methods("PUT")
 
-	books.HandleFunc("/{id}", rest.DeleteBookById).Methods("DELETE")
+	books.HandleFunc("/{id}", f.DeleteBookById).Methods("DELETE")
 
-	router.HandleFunc("/create", rest.CreateBook).Methods("POST")
+	router.HandleFunc("/create", f.CreateBook).Methods("POST")
 
-	router.HandleFunc("/search", rest.GetBooksByName).Methods("GET")
+	router.HandleFunc("/search", f.GetBooksByName).Methods("GET")
 
 	return router
 }

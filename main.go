@@ -6,14 +6,12 @@ import (
 	"net/http"
 	"os"
 
-	// "io/ioutil"
-
-	mdl "github.com/Onelvay/docker-compose-project/pkg/model"
+	rest "github.com/Onelvay/docker-compose-project/pkg/rest"
 	"github.com/Onelvay/docker-compose-project/pkg/server"
 	"github.com/spf13/viper"
 
-	// yaml "gopkg.in/yaml.v3"
-	db "github.com/Onelvay/docker-compose-project/database"
+	contr "github.com/Onelvay/docker-compose-project/pkg/controller"
+	db "github.com/Onelvay/docker-compose-project/postgres"
 )
 
 func main() {
@@ -21,15 +19,18 @@ func main() {
 		log.Fatalf("error initializing configs: %s", err.Error())
 	}
 
-	config := mdl.NewConfig(viper.GetString("db.host"),
+	config := db.NewConfig(viper.GetString("db.host"),
 		viper.GetString("db.port"),
 		viper.GetString("db.dbname"),
 		viper.GetString("db.user"),
 		viper.GetString("db.pass"),
 	)
-	db.NewPostgresDb(*config)
+	postgres := db.NewPostgresDb(*config)
+	db := contr.NewDbController(postgres)
 
-	router := server.InitRoutes()
+	handlers := rest.NewHandlers(db)
+
+	router := server.InitRoutes(handlers)
 	var PORT string
 	if PORT = os.Getenv("PORT"); PORT == "" {
 		PORT = "8080"
