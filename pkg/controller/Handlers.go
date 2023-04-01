@@ -1,4 +1,4 @@
-package service
+package controller
 
 import (
 	"encoding/json"
@@ -6,16 +6,16 @@ import (
 	"net/http"
 	"strconv"
 
-	contr "github.com/Onelvay/docker-compose-project/pkg/controller"
+	service "github.com/Onelvay/docker-compose-project/pkg/service"
 
 	"github.com/gorilla/mux"
 )
 
 type HandleFunctions struct {
-	db *contr.BookstorePostgres
+	db service.BookstorePostgreser
 }
 
-func NewHandlers(db *contr.BookstorePostgres) *HandleFunctions {
+func NewHandlers(db service.BookstorePostgreser) *HandleFunctions {
 	return &HandleFunctions{db}
 }
 

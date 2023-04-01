@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"os"
 
-	rest "github.com/Onelvay/docker-compose-project/pkg/rest"
 	"github.com/Onelvay/docker-compose-project/pkg/server"
 	"github.com/spf13/viper"
 
@@ -28,7 +27,7 @@ func main() {
 	postgres := db.NewPostgresDb(*config)
 	db := contr.NewDbController(postgres)
 
-	handlers := rest.NewHandlers(db)
+	handlers := contr.NewHandlers(db)
 
 	router := server.InitRoutes(handlers)
 	var PORT string

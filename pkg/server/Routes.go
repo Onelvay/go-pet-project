@@ -1,7 +1,7 @@
 package server
 
 import (
-	rest "github.com/Onelvay/docker-compose-project/pkg/rest"
+	rest "github.com/Onelvay/docker-compose-project/pkg/controller"
 	"github.com/gorilla/mux"
 )
 

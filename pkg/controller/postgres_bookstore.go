@@ -20,7 +20,7 @@ var book mdl.Book
 var books []mdl.Book
 
 func (r *BookstorePostgres) GetBookById(id string) (mdl.Book, bool) {
-	res := r.Db.First(&book, "id = ?", id)
+	res := r.Db.Where("id = ?", id).Find(&book)
 	if res.RowsAffected == 0 {
 		return mdl.Book{}, false
 	}
