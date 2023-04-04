@@ -25,6 +25,14 @@ type SignUpInput struct {
 	Password string `json:"password" validate:"required,gte=4"`
 }
 
+type SignInInput struct {
+	Email    string `json:"email" validate:"required,email"`
+	Password string `json:"password" validate:"required,gte=4"`
+}
+
 func (i SignUpInput) Validate() error {
+	return validate.Struct(i)
+}
+func (i SignInInput) Validate() error {
 	return validate.Struct(i)
 }

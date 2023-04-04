@@ -95,3 +95,8 @@ func (r *BookstorePostgres) Create(cnt context.Context, user domain.User) bool {
 	})
 	return true
 }
+func (r *BookstorePostgres) SignInUser(cnt context.Context, email, password string) (domain.User, bool) {
+	var user domain.User
+	r.Db.Where("email = ? AND password = ?", email, password).Find(&user)
+	return user, true
+}

@@ -61,7 +61,22 @@ func (s *HandleFunctions) CreateBook(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "не успешно")
 	}
 }
-func (s *HandleFunctions) SignIn(w http.ResponseWriter, r *http.Request) {
+
+func (s *HandleFunctions) UpdateBook(w http.ResponseWriter, r *http.Request) {
+	id := mux.Vars(r)["id"]
+	name := r.URL.Query().Get("name")
+	desc := r.URL.Query().Get("desc")
+	price_str := r.URL.Query().Get("price")
+	price, _ := strconv.ParseFloat(price_str, 64)
+	res := s.db.UpdateBook(id, name, desc, price)
+	if res {
+		fmt.Fprintf(w, "успешно")
+	} else {
+		fmt.Fprintf(w, "не успешно")
+	}
+
+}
+func (s *HandleFunctions) SignUp(w http.ResponseWriter, r *http.Request) {
 	reqBytes, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		panic(err)
@@ -77,19 +92,34 @@ func (s *HandleFunctions) SignIn(w http.ResponseWriter, r *http.Request) {
 	db := s.db.(service.UserController)
 	a := service.NewUsers(db)
 	a.SignUp(r.Context(), inp)
+	w.WriteHeader(http.StatusOK)
 
 }
-func (s *HandleFunctions) UpdateBook(w http.ResponseWriter, r *http.Request) {
-	id := mux.Vars(r)["id"]
-	name := r.URL.Query().Get("name")
-	desc := r.URL.Query().Get("desc")
-	price_str := r.URL.Query().Get("price")
-	price, _ := strconv.ParseFloat(price_str, 64)
-	res := s.db.UpdateBook(id, name, desc, price)
-	if res {
-		fmt.Fprintf(w, "успешно")
-	} else {
-		fmt.Fprintf(w, "не успешно")
-	}
 
+func (s *HandleFunctions) SignIn(w http.ResponseWriter, r *http.Request) {
+	reqBytes, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		panic(err)
+	}
+	var inp domain.SignInInput
+	if err = json.Unmarshal(reqBytes, &inp); err != nil {
+		panic(err)
+	}
+	if err := inp.Validate(); err != nil {
+		panic(err)
+	}
+	db := s.db.(service.UserController)
+	a := service.NewUsers(db)
+	token, err := a.SignIn(r.Context(), inp)
+	if err != nil {
+		panic(err)
+	}
+	responce, err := json.Marshal(map[string]string{
+		"token": token,
+	})
+	if err != nil {
+		panic(err)
+	}
+	w.Header().Add("Content-Type", "application/json")
+	w.Write(responce)
 }
