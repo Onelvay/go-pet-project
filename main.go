@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/Onelvay/docker-compose-project/pkg/server"
+	"github.com/Onelvay/docker-compose-project/pkg/service"
 	"github.com/spf13/viper"
 
 	contr "github.com/Onelvay/docker-compose-project/pkg/controller"
@@ -25,9 +26,10 @@ func main() {
 		viper.GetString("db.pass"),
 	)
 	postgres := db.NewPostgresDb(*config)
-	db := contr.NewDbController(postgres)
-
-	handlers := contr.NewHandlers(db)
+	db := contr.NewBookstoreDbController(postgres)
+	userDb := contr.NewUserDbController(postgres)
+	userContr := service.NewUserController(userDb)
+	handlers := contr.NewHandlers(db, *userContr)
 
 	router := server.InitRoutes(handlers)
 	var PORT string

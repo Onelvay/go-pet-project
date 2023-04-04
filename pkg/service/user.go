@@ -71,7 +71,5 @@ func (s *UserController) ParseToken(ctx context.Context, token string) (string, 
 	if !ok {
 		return "", errors.New("invalid subject")
 	}
-	fmt.Println(subject)
-
 	return subject, nil
 }
