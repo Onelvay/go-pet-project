@@ -1,8 +1,10 @@
 package controller
 
 import (
+	"context"
 	"strings"
 
+	"github.com/Onelvay/docker-compose-project/pkg/domain"
 	mdl "github.com/Onelvay/docker-compose-project/pkg/model"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -79,4 +81,17 @@ func (r *BookstorePostgres) UpdateBook(id string, name string, desc string, pric
 		return true
 	}
 	return false
+}
+
+func (r *BookstorePostgres) Create(cnt context.Context, user domain.User) bool {
+	byteid := uuid.New()
+	id := strings.Replace(byteid.String(), "-", "", -1)
+	r.Db.Create(&domain.User{
+		ID:           id,
+		Name:         user.Name,
+		Email:        user.Email,
+		Password:     user.Password,
+		RegisteredAt: user.RegisteredAt,
+	})
+	return true
 }

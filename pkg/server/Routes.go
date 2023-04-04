@@ -22,5 +22,6 @@ func InitRoutes(f *rest.HandleFunctions) *mux.Router {
 
 	router.HandleFunc("/search", f.GetBooksByName).Methods("GET")
 
+	router.HandleFunc("/sign-up", f.SignIn).Methods("POST")
 	return router
 }

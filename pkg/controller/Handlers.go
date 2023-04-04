@@ -3,9 +3,11 @@ package controller
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"strconv"
 
+	"github.com/Onelvay/docker-compose-project/pkg/domain"
 	service "github.com/Onelvay/docker-compose-project/pkg/service"
 
 	"github.com/gorilla/mux"
@@ -58,6 +60,24 @@ func (s *HandleFunctions) CreateBook(w http.ResponseWriter, r *http.Request) {
 	} else {
 		fmt.Fprintf(w, "не успешно")
 	}
+}
+func (s *HandleFunctions) SignIn(w http.ResponseWriter, r *http.Request) {
+	reqBytes, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		panic(err)
+	}
+	var inp domain.SignUpInput
+	if err = json.Unmarshal(reqBytes, &inp); err != nil {
+		panic(err)
+	}
+	if err := inp.Validate(); err != nil {
+		panic(err)
+	}
+	fmt.Println(inp)
+	db := s.db.(service.UserController)
+	a := service.NewUsers(db)
+	a.SignUp(r.Context(), inp)
+
 }
 func (s *HandleFunctions) UpdateBook(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["id"]
