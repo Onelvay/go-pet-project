@@ -1,19 +1,13 @@
 package service
 
 import (
-	mdl "github.com/Onelvay/docker-compose-project/pkg/model"
+	"github.com/Onelvay/docker-compose-project/pkg/domain"
 )
 
-type Handlers interface {
-	GetBooks()
-	GetBookById()
-	GetBookByName()
-	DeleteBookById()
-}
 type BookstorePostgreser interface {
-	GetBooks(bool) []mdl.Book
-	GetBookById(string) (mdl.Book, bool)
-	GetBooksByName(string) ([]mdl.Book, bool)
+	GetBooks(bool) []domain.Book
+	GetBookById(string) (domain.Book, bool)
+	GetBooksByName(string) ([]domain.Book, bool)
 	DeleteBookById(string) bool
 	CreateBook(string, float64, string) bool
 	UpdateBook(string, string, string, float64) bool

@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/Onelvay/docker-compose-project/pkg/domain"
-	mdl "github.com/Onelvay/docker-compose-project/pkg/model"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
@@ -18,25 +17,25 @@ func NewDbController(db *gorm.DB) *BookstorePostgres {
 	return &BookstorePostgres{Db: db}
 }
 
-var book mdl.Book
-var books []mdl.Book
+var book domain.Book
+var books []domain.Book
 
-func (r *BookstorePostgres) GetBookById(id string) (mdl.Book, bool) {
+func (r *BookstorePostgres) GetBookById(id string) (domain.Book, bool) {
 	res := r.Db.Where("id = ?", id).Find(&book)
 	if res.RowsAffected == 0 {
-		return mdl.Book{}, false
+		return domain.Book{}, false
 	}
 	return book, true
 }
-func (r *BookstorePostgres) GetBooksByName(name string) ([]mdl.Book, bool) {
+func (r *BookstorePostgres) GetBooksByName(name string) ([]domain.Book, bool) {
 	res := r.Db.Where("name = ?", name).Find(&books)
 	if res.RowsAffected == 0 {
-		return []mdl.Book{}, false
+		return []domain.Book{}, false
 	}
 	return books, true
 }
 
-func (r *BookstorePostgres) GetBooks(sorted bool) []mdl.Book {
+func (r *BookstorePostgres) GetBooks(sorted bool) []domain.Book {
 	if sorted {
 		r.Db.Order("price").Find(&books)
 	} else {
@@ -46,15 +45,15 @@ func (r *BookstorePostgres) GetBooks(sorted bool) []mdl.Book {
 }
 
 func (r *BookstorePostgres) DeleteBookById(id string) bool {
-	res := r.Db.Where("id=?", id).Delete(&mdl.Book{})
+	res := r.Db.Where("id=?", id).Delete(&domain.Book{})
 	return res.RowsAffected == 1
 }
 func (r *BookstorePostgres) CreateBook(name string, price float64, descr string) bool {
 	byteid := uuid.New()
 	id := strings.Replace(byteid.String(), "-", "", -1)
-	res := r.Db.First(&mdl.Book{}, "id = ?", id)
+	res := r.Db.First(&domain.Book{}, "id = ?", id)
 	if res.RowsAffected == 0 {
-		r.Db.Create(&mdl.Book{
+		r.Db.Create(&domain.Book{
 			Id:          id,
 			Name:        name,
 			Description: descr,
@@ -83,7 +82,7 @@ func (r *BookstorePostgres) UpdateBook(id string, name string, desc string, pric
 	return false
 }
 
-func (r *BookstorePostgres) Create(cnt context.Context, user domain.User) bool {
+func (r *BookstorePostgres) CreateUser(cnt context.Context, user domain.User) bool {
 	byteid := uuid.New()
 	id := strings.Replace(byteid.String(), "-", "", -1)
 	r.Db.Create(&domain.User{

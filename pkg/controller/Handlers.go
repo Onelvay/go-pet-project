@@ -1,11 +1,14 @@
 package controller
 
 import (
+	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/Onelvay/docker-compose-project/pkg/domain"
 	service "github.com/Onelvay/docker-compose-project/pkg/service"
@@ -89,8 +92,8 @@ func (s *HandleFunctions) SignUp(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 	fmt.Println(inp)
-	db := s.db.(service.UserController)
-	a := service.NewUsers(db)
+	db := s.db.(service.UserDbActioner)
+	a := service.NewUserController(db)
 	a.SignUp(r.Context(), inp)
 	w.WriteHeader(http.StatusOK)
 
@@ -108,8 +111,8 @@ func (s *HandleFunctions) SignIn(w http.ResponseWriter, r *http.Request) {
 	if err := inp.Validate(); err != nil {
 		panic(err)
 	}
-	db := s.db.(service.UserController)
-	a := service.NewUsers(db)
+	db := s.db.(service.UserDbActioner)
+	a := service.NewUserController(db)
 	token, err := a.SignIn(r.Context(), inp)
 	if err != nil {
 		panic(err)
@@ -122,4 +125,31 @@ func (s *HandleFunctions) SignIn(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Add("Content-Type", "application/json")
 	w.Write(responce)
+}
+
+func (s *HandleFunctions) AuthMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		token, err := getTokenFromRequest(r)
+		if err != nil {
+			panic(err)
+		}
+		db := s.db.(service.UserDbActioner)
+		a := service.NewUserController(db)
+
+		userId, err := a.ParseToken(r.Context(), token)
+		if err != nil {
+			panic(err)
+		}
+		ctx := context.WithValue(r.Context(), userId, userId)
+		r = r.WithContext(ctx)
+		next.ServeHTTP(w, r)
+	})
+}
+func getTokenFromRequest(r *http.Request) (string, error) {
+	header := r.Header.Get("Authorization")
+	if header == "" {
+		return "", errors.New("empty auth header")
+	}
+	headerParts := strings.Split(header, " ")
+	return headerParts[1], nil
 }

@@ -1,4 +1,4 @@
-package model
+package domain
 
 type Book struct {
 	Id          string  `gorm:"primary_key" json:"id"`
