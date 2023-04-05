@@ -17,18 +17,21 @@ type PasswordHasher interface {
 type UserDbActioner interface {
 	CreateUser(cnt context.Context, user domain.User) bool
 	SignInUser(context.Context, string, string) (domain.User, bool)
+}
+type TokenDbActioner interface {
 	CreateToken(cnt context.Context, token domain.Refresh_token) bool
 	GetToken(cxt context.Context, token string) domain.Refresh_token
 }
 type UserController struct {
-	repo UserDbActioner
+	userRepo  UserDbActioner
+	tokenRepo TokenDbActioner
 	// hasher PasswordHasher
 
 	hmacSecret []byte
 }
 
-func NewUserController(db UserDbActioner) *UserController {
-	return &UserController{repo: db}
+func NewUserController(db UserDbActioner, tdb TokenDbActioner) *UserController {
+	return &UserController{userRepo: db, tokenRepo: tdb}
 }
 func (s *UserController) SignUp(ctx context.Context, inp domain.SignUpInput) bool {
 	// password, err := s.hasher.Hash(inp.Password)
@@ -41,10 +44,10 @@ func (s *UserController) SignUp(ctx context.Context, inp domain.SignUpInput) boo
 		Password:     inp.Password,
 		RegisteredAt: time.Now(),
 	}
-	return s.repo.CreateUser(ctx, user)
+	return s.userRepo.CreateUser(ctx, user)
 }
 func (s *UserController) SignIn(ctx context.Context, inp domain.SignInInput) (string, string, error) {
-	user, _ := s.repo.SignInUser(ctx, inp.Email, inp.Password)
+	user, _ := s.userRepo.SignInUser(ctx, inp.Email, inp.Password)
 
 	return s.generateTokens(ctx, user.ID)
 }
@@ -72,7 +75,7 @@ func (s *UserController) ParseToken(ctx context.Context, token string) (string, 
 	return subject, nil
 }
 func (s *UserController) RefreshTokens(ctx context.Context, refreshToken string) (string, string, error) {
-	session := s.repo.GetToken(ctx, refreshToken)
+	session := s.tokenRepo.GetToken(ctx, refreshToken)
 	if session.ExpiresAt.Unix() < time.Now().Unix() {
 		return "", "", nil
 	}
@@ -92,7 +95,7 @@ func (s *UserController) generateTokens(ctx context.Context, userId string) (str
 	if err != nil {
 		return "", "", err
 	}
-	if ok := s.repo.CreateToken(ctx, domain.Refresh_token{
+	if ok := s.tokenRepo.CreateToken(ctx, domain.Refresh_token{
 		UserId:    userId,
 		Token:     refreshToken,
 		ExpiresAt: time.Now().Add(time.Hour * 24 * 30),

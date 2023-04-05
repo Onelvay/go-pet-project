@@ -26,9 +26,12 @@ func main() {
 		viper.GetString("db.pass"),
 	)
 	postgres := db.NewPostgresDb(*config)
+
 	db := contr.NewBookstoreDbController(postgres)
 	userDb := contr.NewUserDbController(postgres)
-	userContr := service.NewUserController(userDb)
+	tokenDb := contr.NewTokenDbController(postgres)
+
+	userContr := service.NewUserController(userDb, tokenDb)
 	handlers := contr.NewHandlers(db, *userContr)
 
 	router := server.InitRoutes(handlers)
