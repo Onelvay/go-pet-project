@@ -12,6 +12,7 @@ import (
 
 	"github.com/Onelvay/docker-compose-project/pkg/domain"
 	service "github.com/Onelvay/docker-compose-project/pkg/service"
+	"github.com/sirupsen/logrus"
 
 	"github.com/gorilla/mux"
 )
@@ -96,7 +97,28 @@ func (s *HandleFunctions) SignUp(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 
 }
+func (h *HandleFunctions) Refresh(w http.ResponseWriter, r *http.Request) {
+	cookie, err := r.Cookie("refresh-token")
+	if err != nil {
+		panic(err)
+	}
+	logrus.Infof("%s", cookie.Value)
 
+	accessToken, refreshToken, err := h.userController.RefreshTokens(r.Context(), cookie.Value)
+	if err != nil {
+		panic(err)
+	}
+	responce, err := json.Marshal(map[string]string{
+		"token": accessToken,
+	})
+	if err != nil {
+		panic(err)
+	}
+	w.Header().Add("Set-Cookie", fmt.Sprintf("refresh-token=%s; HttpOnly", refreshToken))
+	w.Header().Add("Content-Type", "application/json")
+	w.Write(responce)
+
+}
 func (s *HandleFunctions) SignIn(w http.ResponseWriter, r *http.Request) {
 	reqBytes, err := ioutil.ReadAll(r.Body)
 	if err != nil {
@@ -109,16 +131,17 @@ func (s *HandleFunctions) SignIn(w http.ResponseWriter, r *http.Request) {
 	if err := inp.Validate(); err != nil {
 		panic(err)
 	}
-	token, err := s.userController.SignIn(r.Context(), inp)
+	accessToken, refreshToken, err := s.userController.SignIn(r.Context(), inp)
 	if err != nil {
 		panic(err)
 	}
 	responce, err := json.Marshal(map[string]string{
-		"token": token,
+		"token": accessToken,
 	})
 	if err != nil {
 		panic(err)
 	}
+	w.Header().Add("Set-Cookie", fmt.Sprintf("refresh-token=%s; HttpOnly", refreshToken))
 	w.Header().Add("Content-Type", "application/json")
 	w.Write(responce)
 }

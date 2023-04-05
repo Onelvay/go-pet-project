@@ -34,3 +34,14 @@ func (r *BookstorePostgres) SignInUser(cnt context.Context, email, password stri
 	r.Db.Where("email = ? AND password = ?", email, password).Find(&user)
 	return user, true
 }
+
+func (r *BookstorePostgres) CreateToken(cnt context.Context, token domain.Refresh_token) bool {
+	r.Db.Create(&token)
+	return true
+}
+func (r *BookstorePostgres) GetToken(cxt context.Context, token string) domain.Refresh_token {
+	var d domain.Refresh_token
+	r.Db.Where("token= ?", token).Find(&d)
+	r.Db.Delete(&d)
+	return d
+}

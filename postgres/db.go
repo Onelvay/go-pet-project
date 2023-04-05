@@ -42,6 +42,11 @@ func NewPostgresDb(cfg Config) *gorm.DB {
 	if err != nil {
 		panic(err)
 	}
+	err = db.AutoMigrate(&domain.User{}, &domain.Refresh_token{})
+
+	if err != nil {
+		panic(err)
+	}
 
 	return db
 }

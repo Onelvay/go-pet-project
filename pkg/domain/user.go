@@ -19,6 +19,14 @@ type User struct {
 	Password     string    `json:"password"`
 	RegisteredAt time.Time `json:"registered_at"`
 }
+type Refresh_token struct {
+	UserId    string `json:"userId"`
+	Token     string `json:"token" gorm:"primaryKey"`
+	ExpiresAt time.Time
+
+	User User `gorm:"references:ID"`
+}
+
 type SignUpInput struct {
 	Name     string `json:"name" validate:"required,gte=2"`
 	Email    string `json:"email" validate:"required,email"`

@@ -12,6 +12,7 @@ func InitRoutes(f *rest.HandleFunctions) *mux.Router {
 	{
 		auth.HandleFunc("/sign-up", f.SignUp).Methods("POST")
 		auth.HandleFunc("/sign-in", f.SignIn).Methods("GET")
+		auth.HandleFunc("/refresh", f.Refresh).Methods("GET")
 	}
 
 	books := router.PathPrefix("/books").Subrouter()

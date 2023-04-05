@@ -17,4 +17,5 @@ type BookstorePostgreser interface {
 type UserPostgresser interface {
 	CreateUser(cnt context.Context, user domain.User) bool
 	SignInUser(cnt context.Context, email, password string) (domain.User, bool)
+	CreateToken(cnt context.Context, token domain.Refresh_token) bool
 }
