@@ -30,8 +30,9 @@ func main() {
 	db := contr.NewBookstoreDbController(postgres)
 	userDb := contr.NewUserDbController(postgres)
 	tokenDb := contr.NewTokenDbController(postgres)
+	hasher := contr.NewHasher(viper.GetString("app.hash"))
 
-	userContr := service.NewUserController(userDb, tokenDb)
+	userContr := service.NewUserController(userDb, tokenDb, hasher)
 	handlers := contr.NewHandlers(db, *userContr)
 
 	router := server.InitRoutes(handlers)

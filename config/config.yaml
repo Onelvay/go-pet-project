@@ -4,3 +4,5 @@ db:
   dbname: "bookstore"
   port: "5432"
   pass : "Adg12332,"
+app:
+  hash: "alenov"

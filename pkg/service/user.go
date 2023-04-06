@@ -12,7 +12,7 @@ import (
 )
 
 type PasswordHasher interface {
-	Hash(password string) (string, error)
+	Hash(password string) string
 }
 type UserDbActioner interface {
 	CreateUser(cnt context.Context, user domain.User) bool
@@ -25,29 +25,27 @@ type TokenDbActioner interface {
 type UserController struct {
 	userRepo  UserDbActioner
 	tokenRepo TokenDbActioner
-	// hasher PasswordHasher
+	hasher    PasswordHasher
 
 	hmacSecret []byte
 }
 
-func NewUserController(db UserDbActioner, tdb TokenDbActioner) *UserController {
-	return &UserController{userRepo: db, tokenRepo: tdb}
+func NewUserController(db UserDbActioner, tdb TokenDbActioner, hash PasswordHasher) *UserController {
+	return &UserController{userRepo: db, tokenRepo: tdb, hasher: hash}
 }
 func (s *UserController) SignUp(ctx context.Context, inp domain.SignUpInput) bool {
-	// password, err := s.hasher.Hash(inp.Password)
-	// if err != nil {
-	// 	return err
-	// }
+	password := s.hasher.Hash(inp.Password)
 	user := domain.User{
 		Name:         inp.Name,
 		Email:        inp.Email,
-		Password:     inp.Password,
+		Password:     password,
 		RegisteredAt: time.Now(),
 	}
 	return s.userRepo.CreateUser(ctx, user)
 }
 func (s *UserController) SignIn(ctx context.Context, inp domain.SignInInput) (string, string, error) {
-	user, _ := s.userRepo.SignInUser(ctx, inp.Email, inp.Password)
+	password := s.hasher.Hash(inp.Password)
+	user, _ := s.userRepo.SignInUser(ctx, inp.Email, password)
 
 	return s.generateTokens(ctx, user.ID)
 }
