@@ -10,7 +10,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/Onelvay/docker-compose-project/payment/request"
+	request "github.com/Onelvay/docker-compose-project/payment/APIrequest"
 	"github.com/Onelvay/docker-compose-project/pkg/domain"
 	service "github.com/Onelvay/docker-compose-project/pkg/service"
 	"github.com/gorilla/mux"

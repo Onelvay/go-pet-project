@@ -10,17 +10,9 @@ import (
 	"sort"
 	"strings"
 
-	req "github.com/Onelvay/docker-compose-project/payment/request"
+	req "github.com/Onelvay/docker-compose-project/payment/APIrequest"
 	"github.com/fatih/structs"
 	"github.com/google/uuid"
-)
-
-const (
-	checkoutUrl      = "https://pay.fondy.eu/api/checkout/url/"
-	merchantId       = "1396424"
-	merchantPassword = "test"
-	currency         = "USD"
-	language         = "ru"
 )
 
 type CheckoutRequest struct {
@@ -35,6 +27,14 @@ type CheckoutRequest struct {
 	SenderEmail       string `json:"sender_email,omitempty"`
 	Language          string `json:"lang,omitempty"`
 	ProductId         string `json:"product_id,omitempty"`
+}
+
+var merchantId, merchantPassword, checkoutUrl string
+
+func InitConst(merchantId_, merchantPassword_, checkoutUrl_ string) {
+	merchantId = merchantId_
+	merchantPassword = merchantPassword_
+	checkoutUrl = checkoutUrl_
 }
 
 func (r *CheckoutRequest) SetSignature(password string) {

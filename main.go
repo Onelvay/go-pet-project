@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/Onelvay/docker-compose-project/payment/client"
 	"github.com/Onelvay/docker-compose-project/pkg/server"
 	"github.com/Onelvay/docker-compose-project/pkg/service"
 	"github.com/spf13/viper"
@@ -18,6 +19,8 @@ func main() {
 	if err := initConfig(); err != nil {
 		log.Fatalf("error initializing configs: %s", err.Error())
 	}
+
+	client.InitConst(viper.GetString("payment.merchantId"), viper.GetString("payment.merchantPassword"), viper.GetString("payment.checkoutUrl"))
 
 	config := db.NewConfig(viper.GetString("db.host"),
 		viper.GetString("db.port"),
