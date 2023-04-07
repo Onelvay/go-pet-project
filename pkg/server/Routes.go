@@ -24,6 +24,7 @@ func InitRoutes(f *rest.HandleFunctions) *mux.Router {
 		books.HandleFunc("/{id}", f.DeleteBookById).Methods("DELETE")
 		router.HandleFunc("/create", f.CreateBook).Methods("POST")
 		router.HandleFunc("/search", f.GetBooksByName).Methods("GET")
+		router.HandleFunc("/callback", f.Callback).Methods("POST")
 
 	}
 

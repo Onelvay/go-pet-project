@@ -10,11 +10,11 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/Onelvay/docker-compose-project/payment/request"
 	"github.com/Onelvay/docker-compose-project/pkg/domain"
 	service "github.com/Onelvay/docker-compose-project/pkg/service"
-	"github.com/sirupsen/logrus"
-
 	"github.com/gorilla/mux"
+	"github.com/sirupsen/logrus"
 )
 
 type HandleFunctions struct {
@@ -26,6 +26,13 @@ func NewHandlers(db service.BookstorePostgreser, userController service.UserCont
 	return &HandleFunctions{db, userController}
 }
 
+func (s *HandleFunctions) Callback(w http.ResponseWriter, r *http.Request) {
+	body, _ := ioutil.ReadAll(r.Body)
+	fmt.Println(string(body))
+	apiResp := request.APIResponseHandler{}
+	json.Unmarshal(body, &apiResp)
+	fmt.Println(apiResp.Responce)
+}
 func (s *HandleFunctions) GetBooks(w http.ResponseWriter, r *http.Request) {
 	URLsort := r.URL.Query().Get("sorted")
 	sort := false
