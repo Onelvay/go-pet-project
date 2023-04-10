@@ -1,3 +1,5 @@
+// ya dobavly potom commenti
+
 package service
 
 import (
@@ -22,10 +24,15 @@ type TokenDbActioner interface {
 	CreateToken(cnt context.Context, token domain.Refresh_token) bool
 	GetToken(cxt context.Context, token string) domain.Refresh_token
 }
+type PaymentDbActioner interface {
+	CreateTransaction(context.Context, interface{}) error
+	GetTransaction(context.Context, interface{}) error
+}
 type UserController struct {
-	userRepo  UserDbActioner
-	tokenRepo TokenDbActioner
-	hasher    PasswordHasher
+	userRepo    UserDbActioner
+	tokenRepo   TokenDbActioner
+	hasher      PasswordHasher
+	paymentRepo PaymentDbActioner
 
 	hmacSecret []byte
 }
