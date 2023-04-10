@@ -2,32 +2,12 @@ package client
 
 import (
 	"bytes"
-	"crypto/sha1"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"net/http"
-	"sort"
-	"strings"
 
 	req "github.com/Onelvay/docker-compose-project/payment/APIrequest"
-	"github.com/fatih/structs"
-	"github.com/google/uuid"
 )
-
-type CheckoutRequest struct {
-	OrderId           string `json:"order_id"`
-	MerchantId        string `json:"merchant_id"`
-	OrderDesc         string `json:"order_desc"`
-	Signature         string `json:"signature"`
-	Amount            string `json:"amount"`
-	Currency          string `json:"currency"`
-	ResponseURL       string `json:"response_url,omitempty"`
-	ServerCallbackURL string `json:"server_callback_url,omitempty"`
-	SenderEmail       string `json:"sender_email,omitempty"`
-	Language          string `json:"lang,omitempty"`
-	ProductId         string `json:"product_id,omitempty"`
-}
 
 var merchantId, merchantPassword, checkoutUrl string
 
@@ -37,43 +17,7 @@ func InitConst(merchantId_, merchantPassword_, checkoutUrl_ string) {
 	checkoutUrl = checkoutUrl_
 }
 
-func (r *CheckoutRequest) SetSignature(password string) {
-	params := structs.Map(r)
-	var keys []string
-	for k := range params {
-		keys = append(keys, k)
-	}
-	sort.Strings(keys)
-	values := []string{}
-	for _, key := range keys {
-		value := params[key].(string)
-		if value == "" {
-			continue
-		}
-		values = append(values, value)
-	}
-	r.Signature = generateSignature(values, password)
-}
-func generateSignature(values []string, password string) string {
-	newVals := []string{password}
-	newVals = append(newVals, values...)
-	signatureString := strings.Join(newVals, "|")
-	fmt.Println(signatureString)
-	hash := sha1.New()
-	hash.Write([]byte(signatureString))
-	return fmt.Sprintf("%x", hash.Sum(nil))
-}
-func CreateOrder(amount string) {
-	byteid := uuid.New()
-	id := strings.Replace(byteid.String(), "-", "", -1)
-	checkoutRequest := &CheckoutRequest{
-		OrderId:           id,
-		MerchantId:        merchantId,
-		OrderDesc:         "course fsafx aaa",
-		Amount:            amount,
-		Currency:          "USD",
-		ServerCallbackURL: "https://6a8f-80-242-211-178.in.ngrok.io/callback",
-	}
+func CreateOrder(checkoutRequest req.CheckoutRequest) req.APIResponse {
 	checkoutRequest.SetSignature(merchantPassword)
 	request := req.APIRequest{Request: checkoutRequest}
 	requestBody, _ := json.Marshal(request)
@@ -91,5 +35,5 @@ func CreateOrder(amount string) {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println(apiResp)
+	return apiResp
 }

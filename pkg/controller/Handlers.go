@@ -10,9 +10,12 @@ import (
 	"strconv"
 	"strings"
 
+	req "github.com/Onelvay/docker-compose-project/payment/APIrequest"
 	request "github.com/Onelvay/docker-compose-project/payment/APIrequest"
+	client "github.com/Onelvay/docker-compose-project/payment/client"
 	"github.com/Onelvay/docker-compose-project/pkg/domain"
 	service "github.com/Onelvay/docker-compose-project/pkg/service"
+	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 )
@@ -26,12 +29,46 @@ func NewHandlers(db service.BookstorePostgreser, userController service.UserCont
 	return &HandleFunctions{db, userController}
 }
 
+type Product struct {
+	Id string
+}
+
+func (s *HandleFunctions) CreateOrder(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("called")
+	reqBytes, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		panic(err)
+	}
+	var inp Product
+	if err = json.Unmarshal(reqBytes, &inp); err != nil {
+		panic(err)
+	}
+	product, _ := s.db.GetBookById(inp.Id)
+	byteid := uuid.New()
+	id := strings.Replace(byteid.String(), "-", "", -1)
+	price := fmt.Sprintf("%v", product.Price)
+	checkoutRequest := &req.CheckoutRequest{
+		OrderId:           id,
+		MerchantId:        "1396424",
+		OrderDesc:         "course fsafx aaa",
+		Amount:            price,
+		ProductId:         product.Id,
+		Currency:          "USD",
+		ServerCallbackURL: "https://6a8f-80-242-211-178.in.ngrok.io/callback",
+	}
+	api := client.CreateOrder(*checkoutRequest)
+	fmt.Println(api)
+	json.NewEncoder(w).Encode(api)
+
+}
+
 func (s *HandleFunctions) Callback(w http.ResponseWriter, r *http.Request) {
 	body, _ := ioutil.ReadAll(r.Body)
 	fmt.Println(string(body))
 	apiResp := request.APIResponseHandler{}
 	json.Unmarshal(body, &apiResp)
 	fmt.Println(apiResp.Responce)
+	json.NewEncoder(w).Encode(apiResp.Responce)
 }
 func (s *HandleFunctions) GetBooks(w http.ResponseWriter, r *http.Request) {
 	URLsort := r.URL.Query().Get("sorted")

@@ -27,6 +27,12 @@ func InitRoutes(f *rest.HandleFunctions) *mux.Router {
 		router.HandleFunc("/callback", f.Callback).Methods("POST")
 
 	}
+	payment := router.PathPrefix("/order").Subrouter()
+	{
+		// payment.Use(f.AuthMiddleware)
+		payment.HandleFunc("/", f.CreateOrder).Methods("POST")
+		payment.HandleFunc("/callback", f.Callback).Methods("POST")
+	}
 
 	return router
 }

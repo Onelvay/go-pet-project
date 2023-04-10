@@ -10,8 +10,9 @@ app:
 
 payment:
   callbackurl: ""
+
   checkoutUrl: "https://pay.fondy.eu/api/checkout/url/"
+
   merchantId: "1396424"
+
   merchantPassword: "test"
-	currency: "USD"
-	language: "ru"
