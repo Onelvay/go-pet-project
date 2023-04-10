@@ -1,3 +1,5 @@
+// ya dobavly potom commenti
+
 package service
 
 import (
@@ -17,6 +19,7 @@ type PasswordHasher interface {
 type UserDbActioner interface {
 	CreateUser(cnt context.Context, user domain.User) bool
 	SignInUser(context.Context, string, string) (domain.User, bool)
+	// UpdateUser(context.Context, string, string) (domain.User, bool)
 }
 type TokenDbActioner interface {
 	CreateToken(cnt context.Context, token domain.Refresh_token) bool

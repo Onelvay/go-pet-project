@@ -20,14 +20,14 @@ func main() {
 		log.Fatalf("error initializing configs: %s", err.Error())
 	}
 
-	client.InitConst(viper.GetString("payment.merchantId"), viper.GetString("payment.merchantPassword"), viper.GetString("payment.checkoutUrl"))
-
 	config := db.NewConfig(viper.GetString("db.host"),
 		viper.GetString("db.port"),
 		viper.GetString("db.dbname"),
 		viper.GetString("db.user"),
 		viper.GetString("db.pass"),
 	)
+	client.InitConst(viper.GetString("payment.merchantId"), viper.GetString("payment.merchantPassword"), viper.GetString("payment.checkoutUrl"))
+
 	postgres := db.NewPostgresDb(*config)
 
 	db := contr.NewBookstoreDbController(postgres)
