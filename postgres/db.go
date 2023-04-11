@@ -3,6 +3,7 @@ package postgres
 import (
 	"fmt"
 
+	api "github.com/Onelvay/docker-compose-project/payment/APIrequest"
 	"github.com/Onelvay/docker-compose-project/pkg/domain"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -43,6 +44,16 @@ func NewPostgresDb(cfg Config) *gorm.DB {
 		panic(err)
 	}
 	err = db.AutoMigrate(&domain.User{}, &domain.Refresh_token{})
+
+	if err != nil {
+		panic(err)
+	}
+	err = db.AutoMigrate(&domain.User{}, &domain.Order{})
+
+	if err != nil {
+		panic(err)
+	}
+	err = db.AutoMigrate(&domain.Order{}, &api.FinalResponse{})
 
 	if err != nil {
 		panic(err)

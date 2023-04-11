@@ -6,6 +6,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/Onelvay/docker-compose-project/pkg/domain"
 	"github.com/fatih/structs"
 )
 
@@ -15,10 +16,11 @@ type APIRequest struct {
 type APIResponse struct {
 	Response interface{} `json:"response"`
 }
-type APIResponseHandler struct {
+type APIResponce struct {
 	Responce interface{} `json:"responce"`
 }
 type CheckoutRequest struct {
+	Sender_account    string `json:"sender_account"`
 	OrderId           string `json:"order_id"`
 	MerchantId        string `json:"merchant_id"`
 	OrderDesc         string `json:"order_desc"`
@@ -30,6 +32,19 @@ type CheckoutRequest struct {
 	SenderEmail       string `json:"sender_email,omitempty"`
 	Language          string `json:"lang,omitempty"`
 	ProductId         string `json:"product_id,omitempty"`
+}
+
+type FinalResponse struct {
+	ActualAmount string `json:"actual_amount"`
+	OrderId      string `json:"order_id"`
+	PaymentId    string `json:"payment_id"`
+	ProductId    string `json:"product_id"`
+	SenderEmail  string `json:"sender_email"`
+	OrderStatus  string `json:"order_status"`
+	OrderTime    string `json:"order_time"`
+
+	Order   domain.Order `gorm:"references:OrderId"`
+	Product domain.Book  `gorm:"references:Id"`
 }
 
 func (r *CheckoutRequest) SetSignature(password string) {
