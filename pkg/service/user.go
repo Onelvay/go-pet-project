@@ -25,21 +25,20 @@ type TokenDbActioner interface {
 	CreateToken(cnt context.Context, token domain.Refresh_token) bool
 	GetToken(cxt context.Context, token string) domain.Refresh_token
 }
-type PaymentDbActioner interface {
-	CreateTransaction(context.Context, interface{}) error
-	GetTransaction(context.Context, interface{}) error
+type Transaction interface {
+	CreateOrder(userId string, orderId string)
 }
 type UserController struct {
-	userRepo    UserDbActioner
-	tokenRepo   TokenDbActioner
-	hasher      PasswordHasher
-	paymentRepo PaymentDbActioner
+	userRepo  UserDbActioner
+	tokenRepo TokenDbActioner
+	hasher    PasswordHasher
+	orderRepo Transaction
 
 	hmacSecret []byte
 }
 
-func NewUserController(db UserDbActioner, tdb TokenDbActioner, hash PasswordHasher) *UserController {
-	return &UserController{userRepo: db, tokenRepo: tdb, hasher: hash}
+func NewUserController(db UserDbActioner, tdb TokenDbActioner, hash PasswordHasher, or Transaction) *UserController {
+	return &UserController{userRepo: db, tokenRepo: tdb, hasher: hash, orderRepo: or}
 }
 func (s *UserController) SignUp(ctx context.Context, inp domain.SignUpInput) bool {
 	password := s.hasher.Hash(inp.Password)

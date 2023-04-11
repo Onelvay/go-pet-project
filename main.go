@@ -34,9 +34,10 @@ func main() {
 	userDb := contr.NewUserDbController(postgres)
 	tokenDb := contr.NewTokenDbController(postgres)
 	hasher := contr.NewHasher(viper.GetString("app.hash"))
+	order := contr.NewOrderDbController(postgres)
 
-	userContr := service.NewUserController(userDb, tokenDb, hasher)
-	handlers := contr.NewHandlers(db, *userContr)
+	userContr := service.NewUserController(userDb, tokenDb, hasher, order)
+	handlers := contr.NewHandlers(db, *userContr, order)
 
 	router := server.InitRoutes(handlers)
 	var PORT string

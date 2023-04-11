@@ -19,17 +19,25 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+type Transactioner interface {
+	CreateOrder(userId string, orderId string)
+	// CreateInfoOrder(string, string)
+	CreateInfoOrder(request.FinalResponse)
+}
+
 type HandleFunctions struct {
 	db             service.BookstorePostgreser
 	userController service.UserController
+	order          Transactioner
 }
 
-func NewHandlers(db service.BookstorePostgreser, userController service.UserController) *HandleFunctions {
-	return &HandleFunctions{db, userController}
+func NewHandlers(db service.BookstorePostgreser, userController service.UserController, or Transactioner) *HandleFunctions {
+	return &HandleFunctions{db, userController, or}
 }
 
-type Product struct {
-	Id string
+type Transaction struct {
+	Product_id string
+	User_id    string //временно
 }
 
 func (s *HandleFunctions) CreateOrder(w http.ResponseWriter, r *http.Request) {
@@ -37,25 +45,25 @@ func (s *HandleFunctions) CreateOrder(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		panic(err)
 	}
-	var inp Product
+	var inp Transaction
 	if err = json.Unmarshal(reqBytes, &inp); err != nil {
 		panic(err)
 	}
-	product, _ := s.db.GetBookById(inp.Id)
+	product, _ := s.db.GetBookById(inp.Product_id)
 	byteid := uuid.New()
 	id := strings.Replace(byteid.String(), "-", "", -1)
 	price := fmt.Sprintf("%v", product.Price)
 	checkoutRequest := &request.CheckoutRequest{
 		OrderId:           id,
 		MerchantId:        "1396424",
-		OrderDesc:         "course fsafx aaa",
+		OrderDesc:         product.Description,
 		Amount:            price,
 		ProductId:         product.Id,
 		Currency:          "USD",
-		ServerCallbackURL: "https://30da-80-242-211-178.in.ngrok.io/callback",
+		ServerCallbackURL: "https://8d8d-80-242-211-178.in.ngrok.io/callback",
 	}
 	api := client.CreateOrder(*checkoutRequest)
-	fmt.Println(id)
+	s.order.CreateOrder(inp.User_id, id)
 	json.NewEncoder(w).Encode(api)
 
 }
@@ -66,7 +74,7 @@ func (s *HandleFunctions) Callback(w http.ResponseWriter, r *http.Request) {
 	fmt.Println(string(body))
 	apiResp := request.FinalResponse{}
 	json.Unmarshal(body, &apiResp)
-	fmt.Println(apiResp)
+	s.order.CreateInfoOrder(apiResp)
 }
 func (s *HandleFunctions) GetBooks(w http.ResponseWriter, r *http.Request) {
 	URLsort := r.URL.Query().Get("sorted")

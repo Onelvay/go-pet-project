@@ -43,7 +43,7 @@ type FinalResponse struct {
 	OrderStatus  string `json:"order_status"`
 	OrderTime    string `json:"order_time"`
 
-	Order   domain.Order `gorm:"references:OrderId"`
+	Order   domain.Order `gorm:"references:Id"`
 	Product domain.Book  `gorm:"references:Id"`
 }
 
