@@ -71,7 +71,6 @@ func (s *HandleFunctions) CreateOrder(w http.ResponseWriter, r *http.Request) {
 func (s *HandleFunctions) Callback(w http.ResponseWriter, r *http.Request) {
 	body, _ := ioutil.ReadAll(r.Body)
 
-	fmt.Println(string(body))
 	apiResp := request.FinalResponse{}
 	json.Unmarshal(body, &apiResp)
 	s.order.CreateInfoOrder(apiResp)
