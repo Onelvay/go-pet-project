@@ -1,15 +1,9 @@
 package controller
 
 import (
-	request "github.com/Onelvay/docker-compose-project/payment/APIrequest"
 	handler "github.com/Onelvay/docker-compose-project/pkg/controller/handlers"
 	service "github.com/Onelvay/docker-compose-project/pkg/service"
 )
-
-type Transactioner interface {
-	CreateOrder(userId string, orderId string)
-	CreateInfoOrder(request.FinalResponse)
-}
 
 type HandleFunctions struct {
 	User  handler.UserHandler
@@ -17,9 +11,9 @@ type HandleFunctions struct {
 	Order handler.OrderHandlers
 }
 
-func NewHandlers(db service.BookstorePostgreser, userController service.UserController, or Transactioner) *HandleFunctions {
+func NewHandlers(db service.BookstorePostgreser, userController service.UserController, or service.Transactioner, token service.TokenPostgreser) *HandleFunctions {
 	b := handler.NewBookHandler(db)
-	o := handler.NewOrderHandler(or, db)
+	o := handler.NewOrderHandler(or, db, token)
 	u := handler.NewUserHandler(userController)
 
 	return &HandleFunctions{u, b, o}

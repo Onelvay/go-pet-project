@@ -3,9 +3,20 @@ package service
 import (
 	"context"
 
+	request "github.com/Onelvay/docker-compose-project/payment/APIrequest"
 	"github.com/Onelvay/docker-compose-project/pkg/domain"
 )
 
+type Transactioner interface {
+	CreateOrder(userId string, orderId string)
+	CreateInfoOrder(request.FinalResponse)
+}
+
+type TokenPostgreser interface {
+	CreateToken(cnt context.Context, token domain.Refresh_token) bool
+	GetToken(cxt context.Context, token string) domain.Refresh_token
+	GetUserIdByToken(token string) string
+}
 type BookstorePostgreser interface {
 	GetBooks(bool) []domain.Book
 	GetBookById(string) (domain.Book, bool)

@@ -86,6 +86,7 @@ func (s *UserController) RefreshTokens(ctx context.Context, refreshToken string)
 	}
 	return s.generateTokens(ctx, session.UserId)
 }
+
 func (s *UserController) generateTokens(ctx context.Context, userId string) (string, string, error) {
 	t := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.StandardClaims{
 		Subject:   userId,

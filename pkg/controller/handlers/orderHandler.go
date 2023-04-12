@@ -13,23 +13,18 @@ import (
 	"github.com/google/uuid"
 )
 
-type Transactioner interface {
-	CreateOrder(userId string, orderId string)
-	CreateInfoOrder(request.FinalResponse)
-}
-
 type OrderHandlers struct {
-	order Transactioner
+	order service.Transactioner
 	db    service.BookstorePostgreser
+	token service.TokenPostgreser
 }
 
-func NewOrderHandler(t Transactioner, db service.BookstorePostgreser) OrderHandlers {
-	return OrderHandlers{t, db}
+func NewOrderHandler(t service.Transactioner, db service.BookstorePostgreser, token service.TokenPostgreser) OrderHandlers {
+	return OrderHandlers{t, db, token}
 }
 
-type Transaction struct {
+type OrderJSON struct {
 	Product_id string
-	User_id    string //временно
 }
 
 func (s *OrderHandlers) CreateOrder(w http.ResponseWriter, r *http.Request) {
@@ -37,10 +32,15 @@ func (s *OrderHandlers) CreateOrder(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		panic(err)
 	}
-	var inp Transaction
+	var inp OrderJSON
 	if err = json.Unmarshal(reqBytes, &inp); err != nil {
 		panic(err)
 	}
+	cookie, err := r.Cookie("refresh-token")
+	if err != nil {
+		panic(err)
+	}
+	userId := s.token.GetUserIdByToken(cookie.Value)
 	product, _ := s.db.GetBookById(inp.Product_id)
 	byteid := uuid.New()
 	id := strings.Replace(byteid.String(), "-", "", -1)
@@ -55,7 +55,7 @@ func (s *OrderHandlers) CreateOrder(w http.ResponseWriter, r *http.Request) {
 		ServerCallbackURL: "https://8d8d-80-242-211-178.in.ngrok.io/callback",
 	}
 	api := client.CreateOrder(*checkoutRequest)
-	s.order.CreateOrder(inp.User_id, id)
+	s.order.CreateOrder(userId, id)
 	json.NewEncoder(w).Encode(api)
 
 }

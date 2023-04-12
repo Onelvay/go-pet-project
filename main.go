@@ -37,7 +37,7 @@ func main() {
 	order := contr.NewOrderDbController(postgres)
 
 	userContr := service.NewUserController(userDb, tokenDb, hasher, order)
-	handlers := hcont.NewHandlers(db, *userContr, order)
+	handlers := hcont.NewHandlers(db, *userContr, order, tokenDb)
 
 	router := server.InitRoutes(handlers)
 	var PORT string
