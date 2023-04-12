@@ -7,12 +7,12 @@ import (
 	"os"
 
 	"github.com/Onelvay/docker-compose-project/payment/client"
+	contr "github.com/Onelvay/docker-compose-project/pkg/controller"
+	hcont "github.com/Onelvay/docker-compose-project/pkg/controller/handleController"
 	"github.com/Onelvay/docker-compose-project/pkg/server"
 	"github.com/Onelvay/docker-compose-project/pkg/service"
-	"github.com/spf13/viper"
-
-	contr "github.com/Onelvay/docker-compose-project/pkg/controller"
 	db "github.com/Onelvay/docker-compose-project/postgres"
+	"github.com/spf13/viper"
 )
 
 func main() {
@@ -37,7 +37,7 @@ func main() {
 	order := contr.NewOrderDbController(postgres)
 
 	userContr := service.NewUserController(userDb, tokenDb, hasher, order)
-	handlers := contr.NewHandlers(db, *userContr, order)
+	handlers := hcont.NewHandlers(db, *userContr, order)
 
 	router := server.InitRoutes(handlers)
 	var PORT string
