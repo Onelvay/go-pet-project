@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strconv"
 
@@ -16,7 +15,6 @@ type BookHandler struct {
 
 func NewBookHandler(db service.BookstorePostgreser) BookHandler {
 	return BookHandler{db}
-
 }
 
 func (s *BookHandler) GetBooks(w http.ResponseWriter, r *http.Request) {
@@ -25,27 +23,36 @@ func (s *BookHandler) GetBooks(w http.ResponseWriter, r *http.Request) {
 	if URLsort == "true" {
 		sort = true
 	}
-	books := s.db.GetBooks(sort)
+	books, err := s.db.GetBooks(sort)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+	}
 	json.NewEncoder(w).Encode(books)
 }
 func (s *BookHandler) GetBookById(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["id"]
-	book, _ := s.db.GetBookById(id)
-
+	book, err := s.db.GetBookById(id)
+	if err != nil {
+		w.WriteHeader(http.StatusNotFound)
+		panic(err)
+	}
 	json.NewEncoder(w).Encode(book)
 }
 func (s *BookHandler) GetBooksByName(w http.ResponseWriter, r *http.Request) {
 	name := r.URL.Query().Get("name")
-	books, _ := s.db.GetBooksByName(name)
+	books, err := s.db.GetBooksByName(name)
+	if err != nil {
+		w.WriteHeader(http.StatusNotFound)
+	}
 	json.NewEncoder(w).Encode(books)
 }
 func (s *BookHandler) DeleteBookById(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["id"]
 	res := s.db.DeleteBookById(id)
-	if res {
-		fmt.Fprintf(w, "успешно")
+	if res == nil {
+		w.WriteHeader(http.StatusAccepted)
 	} else {
-		fmt.Fprintf(w, "не успешно")
+		w.WriteHeader(http.StatusNotFound)
 	}
 }
 func (s *BookHandler) CreateBook(w http.ResponseWriter, r *http.Request) {
@@ -53,10 +60,10 @@ func (s *BookHandler) CreateBook(w http.ResponseWriter, r *http.Request) {
 	desc := r.URL.Query().Get("desc")
 	price_str := r.URL.Query().Get("price")
 	price, _ := strconv.ParseFloat(price_str, 64)
-	if name != "" && desc != "" && price != 0 && s.db.CreateBook(name, price, desc) {
-		fmt.Fprintf(w, "успешно")
+	if name != "" && desc != "" && price != 0 && s.db.CreateBook(name, price, desc) == nil {
+		w.WriteHeader(http.StatusAccepted)
 	} else {
-		fmt.Fprintf(w, "не успешно")
+		w.WriteHeader(http.StatusBadRequest)
 	}
 }
 
@@ -67,10 +74,10 @@ func (s *BookHandler) UpdateBook(w http.ResponseWriter, r *http.Request) {
 	price_str := r.URL.Query().Get("price")
 	price, _ := strconv.ParseFloat(price_str, 64)
 	res := s.db.UpdateBook(id, name, desc, price)
-	if res {
-		fmt.Fprintf(w, "успешно")
+	if res == nil {
+		w.WriteHeader(http.StatusAccepted)
 	} else {
-		fmt.Fprintf(w, "не успешно")
+		w.WriteHeader(http.StatusBadRequest)
 	}
 
 }

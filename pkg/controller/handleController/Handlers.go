@@ -11,7 +11,7 @@ type HandleFunctions struct {
 	Order handler.OrderHandlers
 }
 
-func NewHandlers(db service.BookstorePostgreser, userController service.UserController, or service.Transactioner, token service.TokenPostgreser) *HandleFunctions {
+func NewHandlers(db service.BookstorePostgreser, userController service.UserController, or service.Transactioner, token service.TokenDbActioner) *HandleFunctions {
 	b := handler.NewBookHandler(db)
 	o := handler.NewOrderHandler(or, db, token)
 	u := handler.NewUserHandler(userController)

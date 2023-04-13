@@ -13,34 +13,19 @@ import (
 	jwt "github.com/golang-jwt/jwt"
 )
 
-type PasswordHasher interface {
-	Hash(password string) string
-}
-type UserDbActioner interface {
-	CreateUser(cnt context.Context, user domain.User) bool
-	SignInUser(context.Context, string, string) (domain.User, bool)
-	// UpdateUser(context.Context, string, string) (domain.User, bool)
-}
-type TokenDbActioner interface {
-	CreateToken(cnt context.Context, token domain.Refresh_token) bool
-	GetToken(cxt context.Context, token string) domain.Refresh_token
-}
-type Transaction interface {
-	CreateOrder(userId string, orderId string) error
-}
 type UserController struct {
 	userRepo  UserDbActioner
 	tokenRepo TokenDbActioner
 	hasher    PasswordHasher
-	orderRepo Transaction
+	orderRepo Transactioner
 
 	hmacSecret []byte
 }
 
-func NewUserController(db UserDbActioner, tdb TokenDbActioner, hash PasswordHasher, or Transaction) *UserController {
+func NewUserController(db UserDbActioner, tdb TokenDbActioner, hash PasswordHasher, or Transactioner) *UserController {
 	return &UserController{userRepo: db, tokenRepo: tdb, hasher: hash, orderRepo: or}
 }
-func (s *UserController) SignUp(ctx context.Context, inp domain.SignUpInput) bool {
+func (s *UserController) SignUp(ctx context.Context, inp domain.SignUpInput) error {
 	password := s.hasher.Hash(inp.Password)
 	user := domain.User{
 		Name:         inp.Name,
@@ -80,7 +65,10 @@ func (s *UserController) ParseToken(ctx context.Context, token string) (string, 
 	return subject, nil
 }
 func (s *UserController) RefreshTokens(ctx context.Context, refreshToken string) (string, string, error) {
-	session := s.tokenRepo.GetToken(ctx, refreshToken)
+	session, err := s.tokenRepo.GetToken(ctx, refreshToken)
+	if err != nil {
+		return "", "", err
+	}
 	if session.ExpiresAt.Unix() < time.Now().Unix() {
 		return "", "", nil
 	}
@@ -105,7 +93,7 @@ func (s *UserController) generateTokens(ctx context.Context, userId string) (str
 		UserId:    userId,
 		Token:     refreshToken,
 		ExpiresAt: time.Now().Add(time.Hour * 24 * 30),
-	}); !ok {
+	}); ok != nil {
 		return "", "", nil
 	}
 	return accessToken, refreshToken, nil

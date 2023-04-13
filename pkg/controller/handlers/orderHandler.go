@@ -16,10 +16,10 @@ import (
 type OrderHandlers struct {
 	order service.Transactioner
 	db    service.BookstorePostgreser
-	token service.TokenPostgreser
+	token service.TokenDbActioner
 }
 
-func NewOrderHandler(t service.Transactioner, db service.BookstorePostgreser, token service.TokenPostgreser) OrderHandlers {
+func NewOrderHandler(t service.Transactioner, db service.BookstorePostgreser, token service.TokenDbActioner) OrderHandlers {
 	return OrderHandlers{t, db, token}
 }
 

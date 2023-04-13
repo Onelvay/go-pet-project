@@ -1,6 +1,8 @@
 package controller
 
 import (
+	"errors"
+	"fmt"
 	"strings"
 
 	"github.com/Onelvay/docker-compose-project/pkg/domain"
@@ -19,53 +21,54 @@ func NewBookstoreDbController(db *gorm.DB) *BookstorePostgres {
 var book domain.Book
 var books []domain.Book
 
-func (r *BookstorePostgres) GetBookById(id string) (domain.Book, bool) {
+func (r *BookstorePostgres) GetBookById(id string) (domain.Book, error) {
 	res := r.Db.Where("id = ?", id).Find(&book)
 	if res.RowsAffected == 0 {
-		return domain.Book{}, false
+		return domain.Book{}, res.Error
 	}
-	return book, true
+	return book, nil
 }
-func (r *BookstorePostgres) GetBooksByName(name string) ([]domain.Book, bool) {
+func (r *BookstorePostgres) GetBooksByName(name string) ([]domain.Book, error) {
 	res := r.Db.Where("name = ?", name).Find(&books)
 	if res.RowsAffected == 0 {
-		return []domain.Book{}, false
+		return []domain.Book{}, fmt.Errorf("no books with name %s", name)
 	}
-	return books, true
+	return books, nil
 }
 
-func (r *BookstorePostgres) GetBooks(sorted bool) []domain.Book {
+func (r *BookstorePostgres) GetBooks(sorted bool) ([]domain.Book, error) {
+	var res *gorm.DB
 	if sorted {
-		r.Db.Order("price").Find(&books)
+		res = r.Db.Order("price").Find(&books)
 	} else {
-		r.Db.Order("price desc").Find(&books)
+		res = r.Db.Order("price desc").Find(&books)
 	}
-	return books
+	return books, res.Error
 }
 
-func (r *BookstorePostgres) DeleteBookById(id string) bool {
+func (r *BookstorePostgres) DeleteBookById(id string) error {
 	res := r.Db.Where("id=?", id).Delete(&domain.Book{})
-	return res.RowsAffected == 1
+	return res.Error
 }
-func (r *BookstorePostgres) CreateBook(name string, price float64, descr string) bool {
+func (r *BookstorePostgres) CreateBook(name string, price float64, descr string) error {
 	byteid := uuid.New()
 	id := strings.Replace(byteid.String(), "-", "", -1)
 	res := r.Db.First(&domain.Book{}, "id = ?", id)
 	if res.RowsAffected == 0 {
-		r.Db.Create(&domain.Book{
+		res := r.Db.Create(&domain.Book{
 			Id:          id,
 			Name:        name,
 			Description: descr,
 			Price:       price,
 		})
-		return true
+		return res.Error
 	}
-	return false
+	return errors.New("not found")
 }
 
-func (r *BookstorePostgres) UpdateBook(id string, name string, desc string, price float64) bool {
+func (r *BookstorePostgres) UpdateBook(id string, name string, desc string, price float64) error {
 	_, res := r.GetBookById(id)
-	if res {
+	if res == nil {
 		if name != "" {
 			book.Name = name
 		}
@@ -75,8 +78,8 @@ func (r *BookstorePostgres) UpdateBook(id string, name string, desc string, pric
 		if price != 0 {
 			book.Price = price
 		}
-		r.Db.Save(&book)
-		return true
+		res := r.Db.Save(&book)
+		return res.Error
 	}
-	return false
+	return res
 }

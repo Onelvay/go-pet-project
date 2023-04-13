@@ -24,34 +24,44 @@ func NewUserHandler(userController service.UserController) UserHandler {
 func (s *UserHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	reqBytes, err := ioutil.ReadAll(r.Body)
 	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
 		panic(err)
 	}
 	var inp domain.SignUpInput
 	if err = json.Unmarshal(reqBytes, &inp); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
 		panic(err)
 	}
 	if err := inp.Validate(); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
 		panic(err)
 	}
-	s.userController.SignUp(r.Context(), inp)
+	err = s.userController.SignUp(r.Context(), inp)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		panic(err)
+	}
 	w.WriteHeader(http.StatusOK)
 
 }
 func (h *UserHandler) Refresh(w http.ResponseWriter, r *http.Request) {
-	cookie, err := r.Cookie("refresh-token")
+	cookie, err := r.Cookie("refresh-token") //данные с куки
 	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
 		panic(err)
 	}
 	logrus.Infof("%s", cookie.Value)
 
-	accessToken, refreshToken, err := h.userController.RefreshTokens(r.Context(), cookie.Value)
+	accessToken, refreshToken, err := h.userController.RefreshTokens(r.Context(), cookie.Value) //новый рефреш и bearer токен
 	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 		panic(err)
 	}
 	responce, err := json.Marshal(map[string]string{
 		"token": accessToken,
 	})
 	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 		panic(err)
 	}
 	w.Header().Add("Set-Cookie", fmt.Sprintf("refresh-token=%s; HttpOnly", refreshToken))
@@ -62,23 +72,28 @@ func (h *UserHandler) Refresh(w http.ResponseWriter, r *http.Request) {
 func (s *UserHandler) SignIn(w http.ResponseWriter, r *http.Request) {
 	reqBytes, err := ioutil.ReadAll(r.Body)
 	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
 		panic(err)
 	}
 	var inp domain.SignInInput
 	if err = json.Unmarshal(reqBytes, &inp); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 		panic(err)
 	}
 	if err := inp.Validate(); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
 		panic(err)
 	}
 	accessToken, refreshToken, err := s.userController.SignIn(r.Context(), inp)
 	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 		panic(err)
 	}
 	responce, err := json.Marshal(map[string]string{
 		"token": accessToken,
 	})
 	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 		panic(err)
 	}
 	w.Header().Add("Set-Cookie", fmt.Sprintf("refresh-token=%s; HttpOnly", refreshToken))
@@ -92,10 +107,12 @@ func (s *UserHandler) AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		token, err := getTokenFromRequest(r)
 		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
 			panic(err)
 		}
 		userId, err := s.userController.ParseToken(r.Context(), token)
 		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
 			panic(err)
 		}
 
@@ -109,6 +126,9 @@ func getTokenFromRequest(r *http.Request) (string, error) {
 	header := r.Header.Get("Authorization")
 	if header == "" {
 		return "", errors.New("empty auth header")
+	}
+	if len(header) != 2 {
+		return "", errors.New("problems with bearer token")
 	}
 	headerParts := strings.Split(header, " ")
 	return headerParts[1], nil
