@@ -2,6 +2,7 @@ package controller
 
 import (
 	"context"
+	"errors"
 
 	"github.com/Onelvay/docker-compose-project/pkg/domain"
 	"gorm.io/gorm"
@@ -25,8 +26,14 @@ func (r *TokenPostgres) GetToken(cxt context.Context, token string) domain.Refre
 	r.Db.Delete(&d)
 	return d
 }
-func (r *TokenPostgres) GetUserIdByToken(token string) string {
+func (r *TokenPostgres) GetUserIdByToken(token string) (string, error) {
 	var d domain.Refresh_token
-	r.Db.Where("token= ?", token).Find(&d)
-	return d.UserId
+	if token == "" {
+		return "", errors.New("token is empty")
+	}
+	res := r.Db.Where("token= ?", token).Find(&d)
+	if res.RowsAffected == 0 {
+		return "", errors.New("user not found")
+	}
+	return d.UserId, nil
 }

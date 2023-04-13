@@ -13,25 +13,31 @@ type OrderController struct {
 func NewOrderDbController(db *gorm.DB) *OrderController {
 	return &OrderController{Db: db}
 }
-func (o OrderController) CreateOrder(userId, orderId string) {
-	o.Db.Create(&domain.Order{
+func (o OrderController) CreateOrder(userId, orderId string) error {
+	result := o.Db.Create(&domain.Order{
 		Id:     orderId,
 		UserId: userId,
 	})
+	return result.Error
 }
 
-func (o OrderController) GetOrder(id string) domain.Order {
+func (o OrderController) GetOrder(id string) (domain.Order, error) {
 	var res domain.Order
 
-	o.Db.Where("id= ?", id).Find(&res)
-	return res
+	result := o.Db.Where("id= ?", id).Find(&res)
+	if result.RowsAffected == 0 {
+		return domain.Order{}, result.Error
+	}
+	return res, nil
 
 }
-func (o OrderController) CreateInfoOrder(api request.FinalResponse) {
-	res := o.GetOrder(api.OrderId)
-
+func (o OrderController) CreateInfoOrder(api request.FinalResponse) error {
+	res, err := o.GetOrder(api.OrderId)
+	if err != nil {
+		panic(err)
+	}
 	o.Db.Save(&res)
-	o.Db.Create(&request.FinalResponse{
+	result := o.Db.Create(&request.FinalResponse{
 		OrderId:      api.OrderId,
 		ProductId:    api.ProductId,
 		ActualAmount: api.ActualAmount,
@@ -40,4 +46,8 @@ func (o OrderController) CreateInfoOrder(api request.FinalResponse) {
 		SenderEmail:  api.SenderEmail,
 		OrderTime:    "time.Now()",
 	})
+	if result.Error != nil {
+		return result.Error
+	}
+	return nil
 }

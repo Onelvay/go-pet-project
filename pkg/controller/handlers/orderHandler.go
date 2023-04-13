@@ -30,17 +30,24 @@ type OrderJSON struct {
 func (s *OrderHandlers) CreateOrder(w http.ResponseWriter, r *http.Request) {
 	reqBytes, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		panic(err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
 	}
 	var inp OrderJSON
-	if err = json.Unmarshal(reqBytes, &inp); err != nil {
-		panic(err)
+	if err = json.Unmarshal(reqBytes, &inp); err != nil { //принятие данных джейсон
+		w.WriteHeader(http.StatusBadRequest)
+		return
 	}
-	cookie, err := r.Cookie("refresh-token")
+	cookie, err := r.Cookie("refresh-token") //читаем с куки токен
 	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	userId, err := s.token.GetUserIdByToken(cookie.Value) //находим юзера
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
 		panic(err)
 	}
-	userId := s.token.GetUserIdByToken(cookie.Value)
 	product, _ := s.db.GetBookById(inp.Product_id)
 	byteid := uuid.New()
 	id := strings.Replace(byteid.String(), "-", "", -1)
@@ -54,14 +61,22 @@ func (s *OrderHandlers) CreateOrder(w http.ResponseWriter, r *http.Request) {
 		Currency:          "USD",
 		ServerCallbackURL: "https://8d8d-80-242-211-178.in.ngrok.io/callback",
 	}
-	api := client.CreateOrder(*checkoutRequest)
-	s.order.CreateOrder(userId, id)
-	json.NewEncoder(w).Encode(api)
+	api, err := client.CreateOrder(*checkoutRequest) //отправляем запрос на заказ
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		panic(err)
+	}
+	err = s.order.CreateOrder(userId, id) //создаем в дб заказ
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		panic(err)
+	}
+	json.NewEncoder(w).Encode(api) //ретерним ссылку на оплату
 
 }
 
-func (s *OrderHandlers) Callback(w http.ResponseWriter, r *http.Request) {
-	body, _ := ioutil.ReadAll(r.Body)
+func (s *OrderHandlers) Callback(w http.ResponseWriter, r *http.Request) { //принятие платежа
+	body, _ := ioutil.ReadAll(r.Body) //читаем джейсон
 
 	apiResp := request.FinalResponse{}
 	json.Unmarshal(body, &apiResp)

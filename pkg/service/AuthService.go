@@ -8,14 +8,14 @@ import (
 )
 
 type Transactioner interface {
-	CreateOrder(userId string, orderId string)
-	CreateInfoOrder(request.FinalResponse)
+	CreateOrder(userId string, orderId string) error
+	CreateInfoOrder(request.FinalResponse) error
 }
 
 type TokenPostgreser interface {
 	CreateToken(cnt context.Context, token domain.Refresh_token) bool
 	GetToken(cxt context.Context, token string) domain.Refresh_token
-	GetUserIdByToken(token string) string
+	GetUserIdByToken(token string) (string, error)
 }
 type BookstorePostgreser interface {
 	GetBooks(bool) []domain.Book

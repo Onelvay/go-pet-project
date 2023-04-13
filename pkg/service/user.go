@@ -26,7 +26,7 @@ type TokenDbActioner interface {
 	GetToken(cxt context.Context, token string) domain.Refresh_token
 }
 type Transaction interface {
-	CreateOrder(userId string, orderId string)
+	CreateOrder(userId string, orderId string) error
 }
 type UserController struct {
 	userRepo  UserDbActioner
