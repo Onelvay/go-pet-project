@@ -17,7 +17,7 @@ func NewBookHandler(db service.BookstorePostgreser) BookHandler {
 	return BookHandler{db}
 }
 
-func (s *BookHandler) GetBooks(w http.ResponseWriter, r *http.Request) {
+func (s *BookHandler) GetBooks(w http.ResponseWriter, r *http.Request) { //ниже все понятно думаю
 	URLsort := r.URL.Query().Get("sorted")
 	sort := false
 	if URLsort == "true" {

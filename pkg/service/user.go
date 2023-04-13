@@ -26,7 +26,7 @@ func NewUserController(db UserDbActioner, tdb TokenDbActioner, hash PasswordHash
 	return &UserController{userRepo: db, tokenRepo: tdb, hasher: hash, orderRepo: or}
 }
 func (s *UserController) SignUp(ctx context.Context, inp domain.SignUpInput) error {
-	password := s.hasher.Hash(inp.Password)
+	password := s.hasher.Hash(inp.Password) //хешируем пароль
 	user := domain.User{
 		Name:         inp.Name,
 		Email:        inp.Email,
@@ -41,7 +41,7 @@ func (s *UserController) SignIn(ctx context.Context, inp domain.SignInInput) (st
 
 	return s.generateTokens(ctx, user.ID)
 }
-func (s *UserController) ParseToken(ctx context.Context, token string) (string, error) {
+func (s *UserController) ParseToken(ctx context.Context, token string) (string, error) { //ВСЕ ЧТО НИЖЕ СВЯЗАНО С  JWT ЛУЧШЕ НЕ ТРОГАТЬ
 	t, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("aaa")

@@ -28,11 +28,11 @@ func (s *UserHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 	var inp domain.SignUpInput
-	if err = json.Unmarshal(reqBytes, &inp); err != nil {
+	if err = json.Unmarshal(reqBytes, &inp); err != nil { //форматирование в обьект
 		w.WriteHeader(http.StatusBadRequest)
 		panic(err)
 	}
-	if err := inp.Validate(); err != nil {
+	if err := inp.Validate(); err != nil { // валидируем джейсон который нам отправили
 		w.WriteHeader(http.StatusBadRequest)
 		panic(err)
 	}
@@ -45,7 +45,7 @@ func (s *UserHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 
 }
 func (h *UserHandler) Refresh(w http.ResponseWriter, r *http.Request) {
-	cookie, err := r.Cookie("refresh-token") //данные с куки
+	cookie, err := r.Cookie("refresh-token") //берем с куки рефреш токен
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		panic(err)
@@ -57,7 +57,7 @@ func (h *UserHandler) Refresh(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		panic(err)
 	}
-	responce, err := json.Marshal(map[string]string{
+	responce, err := json.Marshal(map[string]string{ //форматируем в джейсон
 		"token": accessToken,
 	})
 	if err != nil {
@@ -103,7 +103,7 @@ func (s *UserHandler) SignIn(w http.ResponseWriter, r *http.Request) {
 
 type key int
 
-func (s *UserHandler) AuthMiddleware(next http.Handler) http.Handler {
+func (s *UserHandler) AuthMiddleware(next http.Handler) http.Handler { //проверка на то что юзер залогинился
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		token, err := getTokenFromRequest(r)
 		if err != nil {
