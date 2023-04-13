@@ -1,5 +1,3 @@
-// ya dobavly potom commenti
-
 package service
 
 import (
