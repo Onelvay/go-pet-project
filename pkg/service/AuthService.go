@@ -33,3 +33,7 @@ type BookstorePostgreser interface {
 	CreateBook(string, float64, string) error
 	UpdateBook(string, string, string, float64) error
 }
+
+type Seller interface {
+	CreateBook(domain.Book) error
+}

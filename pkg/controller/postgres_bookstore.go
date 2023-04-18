@@ -24,7 +24,7 @@ var books []domain.Book
 func (r *BookstorePostgres) GetBookById(id string) (domain.Book, error) {
 	res := r.Db.Where("id = ?", id).Find(&book)
 	if res.RowsAffected == 0 {
-		return domain.Book{}, res.Error
+		return domain.Book{}, errors.New("book not found")
 	}
 	return book, nil
 }

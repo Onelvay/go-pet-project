@@ -14,7 +14,7 @@ type HandleFunctions struct {
 // создаем один общий хенлд класс, чтобы через него обращаться ко всем хендлерам
 func NewHandlers(db service.BookstorePostgreser, userController service.UserController, or service.Transactioner, token service.TokenDbActioner) *HandleFunctions {
 	b := handler.NewBookHandler(db)
-	o := handler.NewOrderHandler(or, db, token)
+	o := handler.NewOrderHandler(or, db, token, userController)
 	u := handler.NewUserHandler(userController)
 
 	return &HandleFunctions{u, b, o}

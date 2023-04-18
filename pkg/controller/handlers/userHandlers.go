@@ -127,9 +127,11 @@ func getTokenFromRequest(r *http.Request) (string, error) {
 	if header == "" {
 		return "", errors.New("empty auth header")
 	}
-	if len(header) != 2 {
+
+	headerParts := strings.Split(header, " ")
+	if len(headerParts) != 2 {
+		fmt.Println(headerParts)
 		return "", errors.New("problems with bearer token")
 	}
-	headerParts := strings.Split(header, " ")
 	return headerParts[1], nil
 }
