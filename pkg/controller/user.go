@@ -1,4 +1,4 @@
-package service
+package controller
 
 import (
 	"context"
@@ -8,20 +8,21 @@ import (
 	"time"
 
 	domain "github.com/Onelvay/docker-compose-project/pkg/domain"
+	i "github.com/Onelvay/docker-compose-project/pkg/service"
 	jwt "github.com/golang-jwt/jwt"
 )
 
 type UserController struct {
-	userRepo  UserDbActioner
-	tokenRepo TokenDbActioner
-	hasher    PasswordHasher
-	orderRepo Transactioner
+	userRepo  i.UserDbActioner
+	tokenRepo i.TokenDbActioner
+	hasher    i.PasswordHasher
+	orderRepo i.Transactioner
 
 	hmacSecret []byte
 }
 
-func NewUserController(db UserDbActioner, tdb TokenDbActioner, hash PasswordHasher, or Transactioner) *UserController {
-	return &UserController{userRepo: db, tokenRepo: tdb, hasher: hash, orderRepo: or}
+func NewUserController(db i.UserDbActioner, tdb i.TokenDbActioner, hash i.PasswordHasher, or i.Transactioner) UserController {
+	return UserController{userRepo: db, tokenRepo: tdb, hasher: hash, orderRepo: or}
 }
 func (s *UserController) SignUp(ctx context.Context, inp domain.SignUpInput) error {
 	password := s.hasher.Hash(inp.Password) //хешируем пароль
@@ -37,7 +38,7 @@ func (s *UserController) SignIn(ctx context.Context, inp domain.SignInInput) (st
 	password := s.hasher.Hash(inp.Password)
 	user, _ := s.userRepo.SignInUser(ctx, inp.Email, password)
 
-	return s.generateTokens(ctx, user.ID)
+	return s.GenerateTokens(ctx, user.ID)
 }
 func (s *UserController) ParseToken(ctx context.Context, token string) (string, error) { //ВСЕ ЧТО НИЖЕ СВЯЗАНО С  JWT ЛУЧШЕ НЕ ТРОГАТЬ
 	t, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
@@ -70,10 +71,10 @@ func (s *UserController) RefreshTokens(ctx context.Context, refreshToken string)
 	if session.ExpiresAt.Unix() < time.Now().Unix() {
 		return "", "", nil
 	}
-	return s.generateTokens(ctx, session.UserId)
+	return s.GenerateTokens(ctx, session.UserId)
 }
 
-func (s *UserController) generateTokens(ctx context.Context, userId string) (string, string, error) {
+func (s *UserController) GenerateTokens(ctx context.Context, userId string) (string, string, error) {
 	t := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.StandardClaims{
 		Subject:   userId,
 		IssuedAt:  time.Now().Unix(),

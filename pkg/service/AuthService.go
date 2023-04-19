@@ -33,7 +33,13 @@ type BookstorePostgreser interface {
 	CreateBook(string, float64, string) error
 	UpdateBook(string, string, string, float64) error
 }
-
+type UserController interface {
+	SignUp(ctx context.Context, inp domain.SignUpInput) error
+	SignIn(ctx context.Context, inp domain.SignInInput) (string, string, error)
+	ParseToken(ctx context.Context, token string) (string, error)
+	RefreshTokens(ctx context.Context, refreshToken string) (string, string, error)
+	GenerateTokens(ctx context.Context, userId string) (string, string, error)
+}
 type Seller interface {
 	CreateBook(domain.Book) error
 }

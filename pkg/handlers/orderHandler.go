@@ -1,7 +1,5 @@
 package handlers
 
-//все что ниже трогать не стоит
-
 import (
 	"encoding/json"
 	"fmt"
@@ -13,6 +11,7 @@ import (
 	request "github.com/Onelvay/docker-compose-project/payment/APIrequest"
 	"github.com/Onelvay/docker-compose-project/payment/client"
 	"github.com/Onelvay/docker-compose-project/pkg/service"
+
 	"github.com/google/uuid"
 )
 
@@ -81,7 +80,7 @@ func (s *OrderHandlers) CreateOrder(w http.ResponseWriter, r *http.Request) {
 		Amount:            price,
 		ProductId:         product.Id,
 		Currency:          "USD",
-		ServerCallbackURL: "https://0939-80-242-211-178.in.ngrok.io/order/callback",
+		ServerCallbackURL: "https://13ae-176-64-13-199.eu.ngrok.io/order/callback",
 	}
 	api, err := client.CreateOrder(*checkoutRequest) //отправляем запрос на заказ
 	if err != nil {

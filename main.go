@@ -8,7 +8,6 @@ import (
 
 	"github.com/Onelvay/docker-compose-project/payment/client"
 	contr "github.com/Onelvay/docker-compose-project/pkg/controller"
-	hcont "github.com/Onelvay/docker-compose-project/pkg/controller/handleController"
 	"github.com/Onelvay/docker-compose-project/pkg/server"
 	"github.com/Onelvay/docker-compose-project/pkg/service"
 	db "github.com/Onelvay/docker-compose-project/postgres"
@@ -33,11 +32,11 @@ func main() {
 	db := contr.NewBookstoreDbController(postgres)
 	userDb := contr.NewUserDbController(postgres)
 	tokenDb := contr.NewTokenDbController(postgres)
-	hasher := contr.NewHasher(viper.GetString("app.hash"))
+	hasher := service.NewHasher(viper.GetString("app.hash"))
 	order := contr.NewOrderDbController(postgres)
 
-	userContr := service.NewUserController(userDb, tokenDb, hasher, order)
-	handlers := hcont.NewHandlers(db, *userContr, order, tokenDb)
+	userContr := contr.NewUserController(userDb, tokenDb, hasher, order)
+	handlers := contr.NewHandlers(db, &userContr, order, tokenDb)
 
 	router := server.InitRoutes(handlers)
 	var PORT string
