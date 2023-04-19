@@ -1,31 +1,46 @@
 package controller
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"strings"
 
 	"github.com/Onelvay/docker-compose-project/pkg/domain"
+	"github.com/go-redis/redis"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
 type BookstorePostgres struct {
-	Db *gorm.DB
+	Db          *gorm.DB
+	redisClient *redis.Client
 }
 
-func NewBookstoreDbController(db *gorm.DB) *BookstorePostgres {
-	return &BookstorePostgres{Db: db}
+func NewBookstoreDbController(db *gorm.DB, redis *redis.Client) *BookstorePostgres {
+	return &BookstorePostgres{db, redis}
 }
 
 var book domain.Book
 var books []domain.Book
 
 func (r *BookstorePostgres) GetBookById(id string) (domain.Book, error) {
+	val, err := r.redisClient.Get(id).Result()
+	if err == nil {
+		err = json.Unmarshal([]byte(val), &book)
+		if err != nil {
+			return domain.Book{}, errors.New("problem with unmarshalling in postgresBookDB")
+		}
+		return book, nil
+	}
+
 	res := r.Db.Where("id = ?", id).Find(&book)
 	if res.RowsAffected == 0 {
 		return domain.Book{}, errors.New("book not found")
 	}
+
+	saveRedisData(r.redisClient)
+
 	return book, nil
 }
 func (r *BookstorePostgres) GetBooksByName(name string) ([]domain.Book, error) {
@@ -53,17 +68,17 @@ func (r *BookstorePostgres) DeleteBookById(id string) error {
 func (r *BookstorePostgres) CreateBook(name string, price float64, descr string) error {
 	byteid := uuid.New()
 	id := strings.Replace(byteid.String(), "-", "", -1)
-	res := r.Db.First(&domain.Book{}, "id = ?", id)
-	if res.RowsAffected == 0 {
-		res := r.Db.Create(&domain.Book{
-			Id:          id,
-			Name:        name,
-			Description: descr,
-			Price:       price,
-		})
-		return res.Error
-	}
-	return errors.New("not found")
+
+	res := r.Db.Create(&domain.Book{
+		Id:          id,
+		Name:        name,
+		Description: descr,
+		Price:       price,
+	})
+
+	saveRedisData(r.redisClient)
+
+	return res.Error
 }
 
 func (r *BookstorePostgres) UpdateBook(id string, name string, desc string, price float64) error {
@@ -79,7 +94,14 @@ func (r *BookstorePostgres) UpdateBook(id string, name string, desc string, pric
 			book.Price = price
 		}
 		res := r.Db.Save(&book)
+		saveRedisData(r.redisClient)
 		return res.Error
 	}
 	return res
+}
+func saveRedisData(r *redis.Client) {
+	err := r.Set(book.Id, book, 0).Err()
+	if err != nil {
+		fmt.Println(err)
+	}
 }

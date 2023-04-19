@@ -11,7 +11,10 @@ import (
 	"github.com/Onelvay/docker-compose-project/pkg/server"
 	"github.com/Onelvay/docker-compose-project/pkg/service"
 	db "github.com/Onelvay/docker-compose-project/postgres"
+	redisClient "github.com/Onelvay/docker-compose-project/redis"
+	"github.com/go-redis/redis"
 	"github.com/spf13/viper"
+	"gorm.io/gorm"
 )
 
 func main() {
@@ -29,21 +32,23 @@ func main() {
 
 	postgres := db.NewPostgresDb(*config)
 
-	db := contr.NewBookstoreDbController(postgres)
-	userDb := contr.NewUserDbController(postgres)
-	tokenDb := contr.NewTokenDbController(postgres)
-	hasher := service.NewHasher(viper.GetString("app.hash"))
-	order := contr.NewOrderDbController(postgres)
+	redis, err := redisClient.InitRedis(viper.GetString("redis.host"), viper.GetString("redis.password"))
+	if err != nil {
+		panic(err)
+	}
 
-	userContr := contr.NewUserController(userDb, tokenDb, hasher, order)
-	handlers := contr.NewHandlers(db, &userContr, order, tokenDb)
+	db, userDb, tokenDb, orderDb := initDbControllers(postgres, redis)
+	hasher := service.NewHasher(viper.GetString("app.hash"))
+
+	userContr := contr.NewUserController(userDb, tokenDb, hasher, orderDb)
+	handlers := contr.NewHandlers(db, &userContr, orderDb, tokenDb)
 
 	router := server.InitRoutes(handlers)
 	var PORT string
 	if PORT = os.Getenv("PORT"); PORT == "" {
 		PORT = "8080"
 	}
-	err := http.ListenAndServe(":"+PORT, router)
+	err = http.ListenAndServe(":"+PORT, router)
 	if err != nil {
 		fmt.Println(err.Error())
 	}
@@ -54,4 +59,12 @@ func initConfig() error {
 	viper.AddConfigPath("config")
 	viper.SetConfigName("config")
 	return viper.ReadInConfig()
+}
+
+func initDbControllers(postgres *gorm.DB, redis *redis.Client) (*contr.BookstorePostgres, *contr.BookstorePostgres, *contr.TokenPostgres, *contr.OrderController) {
+	db := contr.NewBookstoreDbController(postgres, redis)
+	userDb := contr.NewUserDbController(postgres)
+	tokenDb := contr.NewTokenDbController(postgres)
+	order := contr.NewOrderDbController(postgres)
+	return db, userDb, tokenDb, order
 }

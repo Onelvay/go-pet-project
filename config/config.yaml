@@ -13,3 +13,8 @@ payment:
   checkoutUrl: "https://pay.fondy.eu/api/checkout/url/"
   merchantId: "1396424"
   merchantPassword: "test"
+
+redis:
+  host: "localhost:6379"
+  password: ""
+  db: 0
