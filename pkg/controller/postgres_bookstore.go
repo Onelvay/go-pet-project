@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/Onelvay/docker-compose-project/pkg/domain"
@@ -39,15 +40,24 @@ func (r *BookstorePostgres) GetBookById(id string) (domain.Book, error) {
 		return domain.Book{}, errors.New("book not found")
 	}
 
-	saveRedisData(r.redisClient)
+	saveBookInRedis(r.redisClient)
 
 	return book, nil
 }
 func (r *BookstorePostgres) GetBooksByName(name string) ([]domain.Book, error) {
+	val, err := r.redisClient.Get(name).Result()
+	if err == nil {
+		err = json.Unmarshal([]byte(val), &books)
+		if err == nil {
+			return books, nil
+		}
+	}
 	res := r.Db.Where("name = ?", name).Find(&books)
 	if res.RowsAffected == 0 {
 		return []domain.Book{}, fmt.Errorf("no books with name %s", name)
 	}
+
+	saveBooksInRedis(r.redisClient, name)
 	return books, nil
 }
 
@@ -76,7 +86,7 @@ func (r *BookstorePostgres) CreateBook(name string, price float64, descr string)
 		Price:       price,
 	})
 
-	saveRedisData(r.redisClient)
+	saveBookInRedis(r.redisClient)
 
 	return res.Error
 }
@@ -94,13 +104,27 @@ func (r *BookstorePostgres) UpdateBook(id string, name string, desc string, pric
 			book.Price = price
 		}
 		res := r.Db.Save(&book)
-		saveRedisData(r.redisClient)
+		saveBookInRedis(r.redisClient)
 		return res.Error
 	}
 	return res
 }
-func saveRedisData(r *redis.Client) {
-	err := r.Set(book.Id, book, 0).Err()
+func saveBookInRedis(r *redis.Client) {
+	j, err := json.Marshal(book)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	err = r.Set(book.Id, j, 0).Err()
+	if err != nil {
+		fmt.Println(err)
+	}
+}
+func saveBooksInRedis(r *redis.Client, name string) {
+	j, err := json.Marshal(books)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	err = r.Set(name, j, 0).Err()
 	if err != nil {
 		fmt.Println(err)
 	}
