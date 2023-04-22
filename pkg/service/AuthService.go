@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 
-	request "github.com/Onelvay/docker-compose-project/payment/APIrequest"
 	"github.com/Onelvay/docker-compose-project/pkg/domain"
 )
 
@@ -13,6 +12,7 @@ type PasswordHasher interface {
 type UserDbActioner interface {
 	CreateUser(cnt context.Context, user domain.User) error
 	SignInUser(context.Context, string, string) (domain.User, error)
+	GetUserOrders(id string) ([]domain.FinalResponse, error)
 }
 type TokenDbActioner interface {
 	CreateToken(cnt context.Context, token domain.Refresh_token) error
@@ -22,7 +22,7 @@ type TokenDbActioner interface {
 
 type Transactioner interface {
 	CreateOrder(userId string, orderId string) error
-	CreateInfoOrder(request.FinalResponse) error
+	CreateInfoOrder(domain.FinalResponse) error
 }
 
 type BookstorePostgreser interface {

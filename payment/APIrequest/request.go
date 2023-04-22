@@ -6,7 +6,6 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/Onelvay/docker-compose-project/pkg/domain"
 	"github.com/fatih/structs"
 )
 
@@ -32,19 +31,6 @@ type CheckoutRequest struct {
 	SenderEmail       string `json:"sender_email,omitempty"`
 	Language          string `json:"lang,omitempty"`
 	ProductId         string `json:"product_id,omitempty"`
-}
-
-type FinalResponse struct {
-	ActualAmount string `json:"actual_amount"`
-	OrderId      string `json:"order_id"`
-	PaymentId    int    `json:"payment_id"`
-	ProductId    string `json:"product_id"`
-	SenderEmail  string `json:"sender_email"`
-	OrderStatus  string `json:"order_status"`
-	OrderTime    string `json:"order_time"`
-
-	Order   domain.Order `gorm:"references:Id"`
-	Product domain.Book  `gorm:"references:Id"`
 }
 
 func (r *CheckoutRequest) SetSignature(password string) {

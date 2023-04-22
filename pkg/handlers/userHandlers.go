@@ -1,137 +1,26 @@
 package handlers
 
 import (
-	"context"
-	"encoding/json"
-	"errors"
 	"fmt"
-	"io/ioutil"
 	"net/http"
-	"strings"
 
-	"github.com/Onelvay/docker-compose-project/pkg/domain"
 	"github.com/Onelvay/docker-compose-project/pkg/service"
-	"github.com/sirupsen/logrus"
 )
 
 type UserHandler struct {
 	userController service.UserController
+	userDb         service.UserDbActioner
 }
 
-func NewUserHandler(userController service.UserController) UserHandler {
-	return UserHandler{userController}
-}
-func (s *UserHandler) SignUp(w http.ResponseWriter, r *http.Request) {
-	reqBytes, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		panic(err)
-	}
-	var inp domain.SignUpInput
-	if err = json.Unmarshal(reqBytes, &inp); err != nil { //форматирование в обьект
-		w.WriteHeader(http.StatusBadRequest)
-		panic(err)
-	}
-	if err := inp.Validate(); err != nil { // валидируем джейсон который нам отправили
-		w.WriteHeader(http.StatusBadRequest)
-		panic(err)
-	}
-	err = s.userController.SignUp(r.Context(), inp)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		panic(err)
-	}
-	w.WriteHeader(http.StatusOK)
-
-}
-func (h *UserHandler) Refresh(w http.ResponseWriter, r *http.Request) {
-	cookie, err := r.Cookie("refresh-token") //берем с куки рефреш токен
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		panic(err)
-	}
-	logrus.Infof("%s", cookie.Value)
-
-	accessToken, refreshToken, err := h.userController.RefreshTokens(r.Context(), cookie.Value) //новый рефреш и bearer токен
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		panic(err)
-	}
-	responce, err := json.Marshal(map[string]string{ //форматируем в джейсон
-		"token": accessToken,
-	})
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		panic(err)
-	}
-	w.Header().Add("Set-Cookie", fmt.Sprintf("refresh-token=%s; HttpOnly", refreshToken))
-	w.Header().Add("Content-Type", "application/json")
-	w.Write(responce)
-
-}
-func (s *UserHandler) SignIn(w http.ResponseWriter, r *http.Request) {
-	reqBytes, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		panic(err)
-	}
-	var inp domain.SignInInput
-	if err = json.Unmarshal(reqBytes, &inp); err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		panic(err)
-	}
-	if err := inp.Validate(); err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		panic(err)
-	}
-	accessToken, refreshToken, err := s.userController.SignIn(r.Context(), inp)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		panic(err)
-	}
-	responce, err := json.Marshal(map[string]string{
-		"token": accessToken,
-	})
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		panic(err)
-	}
-	w.Header().Add("Set-Cookie", fmt.Sprintf("refresh-token=%s; HttpOnly", refreshToken))
-	w.Header().Add("Content-Type", "application/json")
-	w.Write(responce)
+func NewUserHandler(userController service.UserController, userDb service.UserDbActioner) *UserHandler {
+	return &UserHandler{userController, userDb}
 }
 
-type key int
-
-func (s *UserHandler) AuthMiddleware(next http.Handler) http.Handler { //проверка на то что юзер залогинился
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		token, err := getTokenFromRequest(r)
-		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			panic(err)
-		}
-		userId, err := s.userController.ParseToken(r.Context(), token)
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			panic(err)
-		}
-
-		var ctxUserId key
-		ctx := context.WithValue(r.Context(), ctxUserId, userId)
-		r = r.WithContext(ctx)
-		next.ServeHTTP(w, r)
-	})
-}
-func getTokenFromRequest(r *http.Request) (string, error) {
-	header := r.Header.Get("Authorization")
-	if header == "" {
-		return "", errors.New("empty auth header")
+func (u *UserHandler) GetOrders(w http.ResponseWriter, r *http.Request) {
+	userId := getUserIdFromBearerToken(w, r, u.userController)
+	res, err := u.userDb.GetUserOrders(userId)
+	if err != nil {
+		fmt.Println(err)
 	}
-
-	headerParts := strings.Split(header, " ")
-	if len(headerParts) != 2 {
-		fmt.Println(headerParts)
-		return "", errors.New("problems with bearer token")
-	}
-	return headerParts[1], nil
+	fmt.Println(res)
 }

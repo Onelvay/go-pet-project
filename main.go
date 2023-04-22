@@ -8,6 +8,7 @@ import (
 
 	"github.com/Onelvay/docker-compose-project/payment/client"
 	contr "github.com/Onelvay/docker-compose-project/pkg/controller"
+	handlersss "github.com/Onelvay/docker-compose-project/pkg/handlers"
 	"github.com/Onelvay/docker-compose-project/pkg/server"
 	"github.com/Onelvay/docker-compose-project/pkg/service"
 	db "github.com/Onelvay/docker-compose-project/postgres"
@@ -42,8 +43,8 @@ func main() {
 
 	userContr := contr.NewUserController(userDb, tokenDb, hasher, orderDb)
 	handlers := contr.NewHandlers(db, &userContr, orderDb, tokenDb)
-
-	router := server.InitRoutes(handlers)
+	class := handlersss.NewUserHandler(&userContr, userDb)
+	router := server.InitRoutes(handlers, *class)
 	var PORT string
 	if PORT = os.Getenv("PORT"); PORT == "" {
 		PORT = "8080"
@@ -61,7 +62,7 @@ func initConfig() error {
 	return viper.ReadInConfig()
 }
 
-func initDbControllers(postgres *gorm.DB, redis *redis.Client) (*contr.BookstorePostgres, *contr.BookstorePostgres, *contr.TokenPostgres, *contr.OrderController) {
+func initDbControllers(postgres *gorm.DB, redis *redis.Client) (*contr.BookstorePostgres, *contr.UserPostgres, *contr.TokenPostgres, *contr.OrderController) {
 	db := contr.NewBookstoreDbController(postgres, redis)
 	userDb := contr.NewUserDbController(postgres)
 	tokenDb := contr.NewTokenDbController(postgres)

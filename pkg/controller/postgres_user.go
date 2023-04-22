@@ -10,17 +10,17 @@ import (
 )
 
 type UserPostgres struct {
-	Db *gorm.DB
+	db *gorm.DB
 }
 
-func NewUserDbController(db *gorm.DB) *BookstorePostgres {
-	return &BookstorePostgres{Db: db}
+func NewUserDbController(db *gorm.DB) *UserPostgres {
+	return &UserPostgres{db: db}
 }
 
-func (r *BookstorePostgres) CreateUser(cnt context.Context, user domain.User) error {
+func (r *UserPostgres) CreateUser(cnt context.Context, user domain.User) error {
 	byteid := uuid.New()
 	id := strings.Replace(byteid.String(), "-", "", -1)
-	res := r.Db.Create(&domain.User{
+	res := r.db.Create(&domain.User{
 		ID:           id,
 		Name:         user.Name,
 		Email:        user.Email,
@@ -29,8 +29,22 @@ func (r *BookstorePostgres) CreateUser(cnt context.Context, user domain.User) er
 	})
 	return res.Error
 }
-func (r *BookstorePostgres) SignInUser(cnt context.Context, email, password string) (domain.User, error) {
+func (r *UserPostgres) SignInUser(cxt context.Context, email, password string) (domain.User, error) {
 	var user domain.User
-	res := r.Db.Where("email = ? AND password = ?", email, password).Find(&user)
+	res := r.db.Where("email = ? AND password = ?", email, password).Find(&user)
 	return user, res.Error
+}
+
+func (r *UserPostgres) GetUserOrders(id string) ([]domain.FinalResponse, error) {
+	var orders []domain.FinalResponse
+	// rows, err := r.db.Table("final_responses").Select("final_responses.product_id").Joins("join on orders.id=final_responses.order_id AND orders.user_id = ?", id).Rows()
+	r.db.InnerJoins("orders").Find(&orders)
+	// if err != nil {
+	// 	return []domain.FinalResponse{}, err
+	// }
+	// err = rows.Scan(&orders)
+	// if err != nil {
+	// 	return []domain.FinalResponse{}, err
+	// }
+	return orders, nil
 }

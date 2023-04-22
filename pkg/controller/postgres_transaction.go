@@ -1,7 +1,6 @@
 package controller
 
 import (
-	request "github.com/Onelvay/docker-compose-project/payment/APIrequest"
 	"github.com/Onelvay/docker-compose-project/pkg/domain"
 	"gorm.io/gorm"
 )
@@ -31,13 +30,13 @@ func (o OrderController) GetOrder(id string) (domain.Order, error) {
 	return res, nil
 
 }
-func (o OrderController) CreateInfoOrder(api request.FinalResponse) error {
+func (o OrderController) CreateInfoOrder(api domain.FinalResponse) error {
 	res, err := o.GetOrder(api.OrderId)
 	if err != nil {
 		panic(err)
 	}
 	o.Db.Save(&res)
-	result := o.Db.Create(&request.FinalResponse{
+	result := o.Db.Create(&domain.FinalResponse{
 		OrderId:      api.OrderId,
 		ProductId:    api.ProductId,
 		ActualAmount: api.ActualAmount,

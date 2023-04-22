@@ -6,7 +6,7 @@ import (
 )
 
 type HandleFunctions struct {
-	User  handler.UserHandler
+	Auth  handler.AuthHandler
 	Book  handler.BookHandler
 	Order handler.OrderHandlers
 }
@@ -15,7 +15,7 @@ type HandleFunctions struct {
 func NewHandlers(db service.BookstorePostgreser, userController *UserController, or service.Transactioner, token service.TokenDbActioner) *HandleFunctions {
 	b := handler.NewBookHandler(db)
 	o := handler.NewOrderHandler(or, db, token, userController)
-	u := handler.NewUserHandler(userController)
+	u := handler.NewAuthHandler(userController)
 
 	return &HandleFunctions{u, b, o}
 }

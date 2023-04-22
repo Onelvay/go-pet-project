@@ -10,6 +10,7 @@ import (
 
 	request "github.com/Onelvay/docker-compose-project/payment/APIrequest"
 	"github.com/Onelvay/docker-compose-project/payment/client"
+	"github.com/Onelvay/docker-compose-project/pkg/domain"
 	"github.com/Onelvay/docker-compose-project/pkg/service"
 
 	"github.com/google/uuid"
@@ -32,37 +33,35 @@ type OrderJSON struct {
 	Product_id string
 }
 
-func (s *OrderHandlers) findUser(w http.ResponseWriter, r *http.Request, userId chan string) {
-	Mutex.Lock()
+func getUserIdFromBearerToken(w http.ResponseWriter, r *http.Request, s service.UserController) string {
 	token, err := getTokenFromRequest(r)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		fmt.Println("asdas")
 		panic(err)
 	}
-	Id, err := s.userController.ParseToken(r.Context(), token)
+	id, err := s.ParseToken(r.Context(), token)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		panic(err)
 	}
-	userId <- Id
-	Mutex.Unlock()
+	return id
 }
 func (s *OrderHandlers) CreateOrder(w http.ResponseWriter, r *http.Request) {
 	reqBytes, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		fmt.Println(err, "123121312")
+		fmt.Println(err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	var inp OrderJSON
 	if err = json.Unmarshal(reqBytes, &inp); err != nil { //принятие данных джейсон
-		fmt.Println(err, "4534534345")
+		fmt.Println(err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	userId := make(chan string)
-	go s.findUser(w, r, userId)
+
+	userId := getUserIdFromBearerToken(w, r, s.userController)
 
 	product, err := s.db.GetBookById(inp.Product_id)
 	if err != nil {
@@ -80,14 +79,14 @@ func (s *OrderHandlers) CreateOrder(w http.ResponseWriter, r *http.Request) {
 		Amount:            price,
 		ProductId:         product.Id,
 		Currency:          "USD",
-		ServerCallbackURL: "https://13ae-176-64-13-199.eu.ngrok.io/order/callback",
+		ServerCallbackURL: "https://e745-109-239-34-71.eu.ngrok.io/order/callback",
 	}
 	api, err := client.CreateOrder(*checkoutRequest) //отправляем запрос на заказ
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		panic(err)
 	}
-	err = s.order.CreateOrder(<-userId, id) //создаем в дб заказ
+	err = s.order.CreateOrder(userId, id) //создаем в дб заказ
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		panic(err)
@@ -99,7 +98,7 @@ func (s *OrderHandlers) CreateOrder(w http.ResponseWriter, r *http.Request) {
 func (s *OrderHandlers) Callback(w http.ResponseWriter, r *http.Request) { //принятие платежа
 	body, _ := ioutil.ReadAll(r.Body) //читаем джейсон
 
-	apiResp := request.FinalResponse{}
+	apiResp := domain.FinalResponse{}
 	json.Unmarshal(body, &apiResp)
 	fmt.Println(apiResp)
 	s.order.CreateInfoOrder(apiResp)
