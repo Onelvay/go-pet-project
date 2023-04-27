@@ -1,5 +1,5 @@
 FROM golang:latest
-WORKDIR bookstoreass/
+WORKDIR app/
 COPY ./ ./
 
 ENV PORT=8080

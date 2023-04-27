@@ -9,6 +9,5 @@ type FinalResponse struct {
 	OrderStatus  string `json:"order_status"`
 	OrderTime    string `json:"order_time"`
 
-	Order   Order `gorm:"references:Id"`
-	Product Book  `gorm:"references:Id"`
+	Order Order `gorm:"references:Id"`
 }

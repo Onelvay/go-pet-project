@@ -24,7 +24,7 @@ func InitRoutes(f *rest.HandleFunctions, test handlers.UserHandler) *mux.Router 
 	}
 	books := router.PathPrefix("/books").Subrouter()
 	{
-		books.Use(f.Auth.AuthMiddleware)
+		// books.Use(f.Auth.AuthMiddleware)
 		books.HandleFunc("", f.Book.GetBooks).Methods("GET")
 		books.HandleFunc("/{id}", f.Book.GetBookById).Methods("GET")
 		books.HandleFunc("/{id}", f.Book.UpdateBook).Methods("PUT")

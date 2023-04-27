@@ -12,7 +12,7 @@ type PasswordHasher interface {
 type UserDbActioner interface {
 	CreateUser(cnt context.Context, user domain.User) error
 	SignInUser(context.Context, string, string) (domain.User, error)
-	GetUserOrders(id string) ([]domain.FinalResponse, error)
+	GetUserOrders(id string) ([]domain.UserOrders, error)
 }
 type TokenDbActioner interface {
 	CreateToken(cnt context.Context, token domain.Refresh_token) error
@@ -25,10 +25,10 @@ type Transactioner interface {
 	CreateInfoOrder(domain.FinalResponse) error
 }
 
-type BookstorePostgreser interface {
-	GetBooks(bool) ([]domain.Book, error)
-	GetBookById(string) (domain.Book, error)
-	GetBooksByName(string) ([]domain.Book, error)
+type ProductPostgreser interface {
+	GetBooks(bool) ([]domain.Product, error)
+	GetBookById(string) (domain.Product, error)
+	GetBooksByName(string) ([]domain.Product, error)
 	DeleteBookById(string) error
 	CreateBook(string, float64, string) error
 	UpdateBook(string, string, string, float64) error
@@ -40,6 +40,7 @@ type UserController interface {
 	RefreshTokens(ctx context.Context, refreshToken string) (string, string, error)
 	GenerateTokens(ctx context.Context, userId string) (string, string, error)
 }
-type Seller interface {
-	CreateBook(domain.Book) error
-}
+
+// type Seller interface {
+// 	CreateBook(domain.Book) error
+// }

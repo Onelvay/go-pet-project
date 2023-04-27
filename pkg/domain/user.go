@@ -2,15 +2,7 @@ package domain
 
 import (
 	"time"
-
-	validator "github.com/go-playground/validator/v10"
 )
-
-var validate *validator.Validate
-
-func init() {
-	validate = validator.New()
-}
 
 type User struct {
 	ID           string    `json:"id"`
@@ -19,28 +11,6 @@ type User struct {
 	Password     string    `json:"password"`
 	RegisteredAt time.Time `json:"registered_at"`
 }
-type Refresh_token struct {
-	UserId    string `json:"userId"`
-	Token     string `json:"token" gorm:"primaryKey"`
-	ExpiresAt time.Time
-
-	User User `gorm:"references:ID"`
-}
-
-type SignUpInput struct {
-	Name     string `json:"name" validate:"required,gte=2"`
-	Email    string `json:"email" validate:"required,email"`
-	Password string `json:"password" validate:"required,gte=4"`
-}
-
-type SignInInput struct {
-	Email    string `json:"email" validate:"required,email"`
-	Password string `json:"password" validate:"required,gte=4"`
-}
-
-func (i SignUpInput) Validate() error {
-	return validate.Struct(i)
-}
-func (i SignInInput) Validate() error {
-	return validate.Struct(i)
+type UserOrders struct {
+	ProductId string
 }

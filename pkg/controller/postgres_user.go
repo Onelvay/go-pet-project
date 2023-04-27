@@ -35,10 +35,11 @@ func (r *UserPostgres) SignInUser(cxt context.Context, email, password string) (
 	return user, res.Error
 }
 
-func (r *UserPostgres) GetUserOrders(id string) ([]domain.FinalResponse, error) {
-	var orders []domain.FinalResponse
+func (r *UserPostgres) GetUserOrders(id string) ([]domain.UserOrders, error) {
+	var orders []domain.UserOrders
 	// rows, err := r.db.Table("final_responses").Select("final_responses.product_id").Joins("join on orders.id=final_responses.order_id AND orders.user_id = ?", id).Rows()
-	r.db.InnerJoins("orders").Find(&orders)
+	r.db.Table("final_responses").Select("final_responses.product_id").Joins("INNER JOIN orders ON orders.id = final_responses.order_id").Where("orders.user_id = ?", id).Scan(&orders)
+	// r.db.InnerJoins("orders").Find(&orders)
 	// if err != nil {
 	// 	return []domain.FinalResponse{}, err
 	// }
@@ -46,5 +47,6 @@ func (r *UserPostgres) GetUserOrders(id string) ([]domain.FinalResponse, error) 
 	// if err != nil {
 	// 	return []domain.FinalResponse{}, err
 	// }
+	// fmt.Println(orders)
 	return orders, nil
 }

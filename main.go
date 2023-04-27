@@ -6,12 +6,12 @@ import (
 	"net/http"
 	"os"
 
+	db "github.com/Onelvay/docker-compose-project/db/postgres"
 	"github.com/Onelvay/docker-compose-project/payment/client"
 	contr "github.com/Onelvay/docker-compose-project/pkg/controller"
 	handlersss "github.com/Onelvay/docker-compose-project/pkg/handlers"
 	"github.com/Onelvay/docker-compose-project/pkg/server"
 	"github.com/Onelvay/docker-compose-project/pkg/service"
-	db "github.com/Onelvay/docker-compose-project/postgres"
 	redisClient "github.com/Onelvay/docker-compose-project/redis"
 	"github.com/go-redis/redis"
 	"github.com/spf13/viper"
@@ -62,8 +62,8 @@ func initConfig() error {
 	return viper.ReadInConfig()
 }
 
-func initDbControllers(postgres *gorm.DB, redis *redis.Client) (*contr.BookstorePostgres, *contr.UserPostgres, *contr.TokenPostgres, *contr.OrderController) {
-	db := contr.NewBookstoreDbController(postgres, redis)
+func initDbControllers(postgres *gorm.DB, redis *redis.Client) (*contr.ProductDBController, *contr.UserPostgres, *contr.TokenPostgres, *contr.OrderController) {
+	db := contr.NewProductDbController(postgres, redis)
 	userDb := contr.NewUserDbController(postgres)
 	tokenDb := contr.NewTokenDbController(postgres)
 	order := contr.NewOrderDbController(postgres)

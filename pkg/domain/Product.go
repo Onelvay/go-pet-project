@@ -1,8 +1,18 @@
 package domain
 
-type Book struct {
-	Id          string  `gorm:"primary_key" json:"id"`
-	Name        string  `json:"name"`
-	Price       float64 `json:"price"`
-	Description string  `json:"desc"`
-}
+type (
+	Product struct {
+		Id             uint    `json:"id" bson:"id"`
+		Name           string  `json:"name" bson:"name"`
+		Price          float64 `json:"price" bson:"price"`
+		Description    string  `json:"description" bson:"description"`
+		Сharacteristic Сharacteristic
+	}
+	Сharacteristic struct {
+		Category string  `json:"category" bson:"category,omitempty"`
+		Brand    string  `json:"brand" bson:"brand,omitempty"`
+		Size     string  `json:"size" bson:"size,omitempty"`
+		Color    string  `json:"color" bson:"color,omitempty"`
+		Weight   float32 `json:"weight" bson:"weight,omitempty"`
+	}
+)

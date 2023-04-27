@@ -17,4 +17,7 @@ payment:
 redis:
   host: "localhost:6379"
   password: ""
-  db: 0
+  db: 
+
+mongoDB:
+  host: "mongodb://localhost:27017"

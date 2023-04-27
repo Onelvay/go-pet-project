@@ -20,12 +20,12 @@ var Mutex sync.Mutex
 
 type OrderHandlers struct {
 	order          service.Transactioner
-	db             service.BookstorePostgreser
+	db             service.ProductPostgreser
 	token          service.TokenDbActioner
 	userController service.UserController
 }
 
-func NewOrderHandler(t service.Transactioner, db service.BookstorePostgreser, token service.TokenDbActioner, userController service.UserController) OrderHandlers {
+func NewOrderHandler(t service.Transactioner, db service.ProductPostgreser, token service.TokenDbActioner, userController service.UserController) OrderHandlers {
 	return OrderHandlers{t, db, token, userController}
 }
 
@@ -77,9 +77,9 @@ func (s *OrderHandlers) CreateOrder(w http.ResponseWriter, r *http.Request) {
 		MerchantId:        "1396424",
 		OrderDesc:         product.Description,
 		Amount:            price,
-		ProductId:         product.Id,
+		ProductId:         fmt.Sprint(product.Id),
 		Currency:          "USD",
-		ServerCallbackURL: "https://e745-109-239-34-71.eu.ngrok.io/order/callback",
+		ServerCallbackURL: "https://2d3c-80-242-211-179.ngrok-free.app/order/callback",
 	}
 	api, err := client.CreateOrder(*checkoutRequest) //отправляем запрос на заказ
 	if err != nil {

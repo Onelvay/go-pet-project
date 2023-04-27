@@ -32,11 +32,6 @@ func NewPostgresDb(cfg Config) *gorm.DB {
 	if err != nil {
 		panic(err)
 	}
-	err = db.AutoMigrate(&domain.Book{})
-
-	if err != nil {
-		panic(err)
-	}
 	err = db.AutoMigrate(&domain.User{})
 
 	if err != nil {

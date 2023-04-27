@@ -9,15 +9,15 @@ import (
 	"github.com/gorilla/mux"
 )
 
-type BookHandler struct {
-	db service.BookstorePostgreser
+type ProductHandler struct {
+	db service.ProductPostgreser
 }
 
-func NewBookHandler(db service.BookstorePostgreser) BookHandler {
-	return BookHandler{db}
+func NewBookHandler(db service.ProductPostgreser) ProductHandler {
+	return ProductHandler{db}
 }
 
-func (s *BookHandler) GetBooks(w http.ResponseWriter, r *http.Request) { //ниже все понятно думаю
+func (s *ProductHandler) GetBooks(w http.ResponseWriter, r *http.Request) { //ниже все понятно думаю
 	URLsort := r.URL.Query().Get("sorted")
 	sort := false
 	if URLsort == "true" {
@@ -29,7 +29,7 @@ func (s *BookHandler) GetBooks(w http.ResponseWriter, r *http.Request) { //ни�
 	}
 	json.NewEncoder(w).Encode(books)
 }
-func (s *BookHandler) GetBookById(w http.ResponseWriter, r *http.Request) {
+func (s *ProductHandler) GetBookById(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["id"]
 	book, err := s.db.GetBookById(id)
 	if err != nil {
@@ -38,7 +38,7 @@ func (s *BookHandler) GetBookById(w http.ResponseWriter, r *http.Request) {
 	}
 	json.NewEncoder(w).Encode(book)
 }
-func (s *BookHandler) GetBooksByName(w http.ResponseWriter, r *http.Request) {
+func (s *ProductHandler) GetBooksByName(w http.ResponseWriter, r *http.Request) {
 	name := r.URL.Query().Get("name")
 	books, err := s.db.GetBooksByName(name)
 	if err != nil {
@@ -46,7 +46,7 @@ func (s *BookHandler) GetBooksByName(w http.ResponseWriter, r *http.Request) {
 	}
 	json.NewEncoder(w).Encode(books)
 }
-func (s *BookHandler) DeleteBookById(w http.ResponseWriter, r *http.Request) {
+func (s *ProductHandler) DeleteBookById(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["id"]
 	res := s.db.DeleteBookById(id)
 	if res == nil {
@@ -55,7 +55,7 @@ func (s *BookHandler) DeleteBookById(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
 	}
 }
-func (s *BookHandler) CreateBook(w http.ResponseWriter, r *http.Request) {
+func (s *ProductHandler) CreateBook(w http.ResponseWriter, r *http.Request) {
 	name := r.URL.Query().Get("name")
 	desc := r.URL.Query().Get("desc")
 	price_str := r.URL.Query().Get("price")
@@ -67,7 +67,7 @@ func (s *BookHandler) CreateBook(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (s *BookHandler) UpdateBook(w http.ResponseWriter, r *http.Request) {
+func (s *ProductHandler) UpdateBook(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["id"]
 	name := r.URL.Query().Get("name")
 	desc := r.URL.Query().Get("desc")
