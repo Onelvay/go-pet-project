@@ -6,7 +6,8 @@ import (
 	"net/http"
 	"os"
 
-	db "github.com/Onelvay/docker-compose-project/db/postgres"
+	mongoDb "github.com/Onelvay/docker-compose-project/db/mongoDb"
+	"github.com/Onelvay/docker-compose-project/db/postgres"
 	"github.com/Onelvay/docker-compose-project/payment/client"
 	contr "github.com/Onelvay/docker-compose-project/pkg/controller"
 	handlersss "github.com/Onelvay/docker-compose-project/pkg/handlers"
@@ -23,7 +24,7 @@ func main() {
 		log.Fatalf("error initializing configs: %s", err.Error())
 	}
 
-	config := db.NewConfig(viper.GetString("db.host"),
+	config := postgres.NewConfig(viper.GetString("db.host"),
 		viper.GetString("db.port"),
 		viper.GetString("db.dbname"),
 		viper.GetString("db.user"),
@@ -31,18 +32,19 @@ func main() {
 	)
 	client.InitConst(viper.GetString("payment.merchantId"), viper.GetString("payment.merchantPassword"), viper.GetString("payment.checkoutUrl"))
 
-	postgres := db.NewPostgresDb(*config)
+	mongoProductDb := mongoDb.MongoProductCollection()
+	postgresDb := postgres.NewPostgresDb(*config)
 
 	redis, err := redisClient.InitRedis(viper.GetString("redis.host"), viper.GetString("redis.password"))
 	if err != nil {
 		panic(err)
 	}
 
-	db, userDb, tokenDb, orderDb := initDbControllers(postgres, redis)
+	productDb, userDb, tokenDb, orderDb := initDbControllers(postgresDb, redis, mongoProductDb)
 	hasher := service.NewHasher(viper.GetString("app.hash"))
 
 	userContr := contr.NewUserController(userDb, tokenDb, hasher, orderDb)
-	handlers := contr.NewHandlers(db, &userContr, orderDb, tokenDb)
+	handlers := contr.NewHandlers(productDb, &userContr, orderDb, tokenDb)
 	class := handlersss.NewUserHandler(&userContr, userDb)
 	router := server.InitRoutes(handlers, *class)
 	var PORT string
@@ -62,10 +64,10 @@ func initConfig() error {
 	return viper.ReadInConfig()
 }
 
-func initDbControllers(postgres *gorm.DB, redis *redis.Client) (*contr.ProductDBController, *contr.UserPostgres, *contr.TokenPostgres, *contr.OrderController) {
-	db := contr.NewProductDbController(postgres, redis)
+func initDbControllers(postgres *gorm.DB, redis *redis.Client, mongo *mongoDb.MongoDB) (*contr.ProductDBController, *contr.UserPostgres, *contr.TokenPostgres, *contr.OrderController) {
+	productDb := contr.NewProductDbController(mongo, redis)
 	userDb := contr.NewUserDbController(postgres)
 	tokenDb := contr.NewTokenDbController(postgres)
 	order := contr.NewOrderDbController(postgres)
-	return db, userDb, tokenDb, order
+	return productDb, userDb, tokenDb, order
 }

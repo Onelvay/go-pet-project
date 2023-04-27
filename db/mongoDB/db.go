@@ -9,7 +9,12 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func InitMongoDb() *mongo.Collection {
+type MongoDB struct {
+	Ctx context.Context
+	Db  *mongo.Collection
+}
+
+func MongoProductCollection() *MongoDB {
 	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb://localhost:27017"))
 	if err != nil {
 		log.Fatal(err)
@@ -20,5 +25,5 @@ func InitMongoDb() *mongo.Collection {
 		log.Fatal(err)
 	}
 	collection := client.Database("products").Collection("products")
-	return collection
+	return &MongoDB{ctx, collection}
 }

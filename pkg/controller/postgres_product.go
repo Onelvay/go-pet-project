@@ -1,22 +1,47 @@
 package controller
 
 import (
+	"context"
+	"errors"
+	"fmt"
+	"log"
+
+	mongoDB "github.com/Onelvay/docker-compose-project/db/mongoDB"
 	"github.com/Onelvay/docker-compose-project/pkg/domain"
 	"github.com/go-redis/redis"
-	"gorm.io/gorm"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type ProductDBController struct {
-	Db          *gorm.DB
+	db          *mongo.Collection
+	mongoCtx    context.Context
 	redisClient *redis.Client
 }
 
-func NewProductDbController(db *gorm.DB, redis *redis.Client) *ProductDBController {
-	return &ProductDBController{db, redis}
+func NewProductDbController(db *mongoDB.MongoDB, redis *redis.Client) *ProductDBController {
+	return &ProductDBController{db.Db, db.Ctx, redis}
 }
 
-var Product domain.Product
 var Products []domain.Product
+
+func (p *ProductDBController) GetBookById(id uint) (domain.Product, error) {
+	product, err := productExistInRedis(p.redisClient, id)
+	if err == nil {
+		return product, nil
+	} else {
+		log.Println(err)
+	}
+	err = p.db.FindOne(p.mongoCtx, bson.M{"id": id}).Decode(&product)
+	if err != nil {
+		return product, err
+	}
+	if product.Id == 0 {
+		return product, errors.New(fmt.Sprint("no product with id:", id))
+	}
+	saveBookInRedis(p.redisClient, product)
+	return product, nil
+}
 
 // func (r *BookstorePostgres) GetBookById(id string) (domain.Book, error) {
 // 	val, err := r.redisClient.Get(id).Result()
@@ -102,16 +127,7 @@ var Products []domain.Product
 // 	}
 // 	return res
 // }
-// func saveBookInRedis(r *redis.Client) {
-// 	j, err := json.Marshal(book)
-// 	if err != nil {
-// 		log.Fatalln(err)
-// 	}
-// 	err = r.Set(book.Id, j, 0).Err()
-// 	if err != nil {
-// 		fmt.Println(err)
-// 	}
-// }
+
 // func saveBooksInRedis(r *redis.Client, name string) {
 // 	j, err := json.Marshal(books)
 // 	if err != nil {
