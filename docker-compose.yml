@@ -5,11 +5,12 @@ services:
     ports:
       - 8080:8080
     depends_on:
-      - database
+      - postgres
+      - mongoDb
     environment:
       PORT: 8080
 
-  database:
+  postgres:
     image: "postgres" 
     env_file:
       - database.env 
@@ -17,9 +18,22 @@ services:
       - database-data:/var/lib/postgresql/data/
     ports:
       - 5432:5432 
+
+  mongoDb:
+    image: "mongo"
+    volumes:
+      - mongodb_data:/data/db
+    ports:
+      - "27017:27017"
+
   redis:
     image: redis
     ports:
       - "6379:6379"
+    volumes:
+      - redis_data:/data
+  
 volumes:
   database-data:
+  mongodb_data:
+  redis_data:

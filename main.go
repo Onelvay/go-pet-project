@@ -6,16 +6,17 @@ import (
 	"net/http"
 	"os"
 
-	mongoDb "github.com/Onelvay/docker-compose-project/db/mongoDb"
+	mongoDb "github.com/Onelvay/docker-compose-project/db/mongoDB"
 	"github.com/Onelvay/docker-compose-project/db/postgres"
 	"github.com/Onelvay/docker-compose-project/payment/client"
 	contr "github.com/Onelvay/docker-compose-project/pkg/controller"
-	handlersss "github.com/Onelvay/docker-compose-project/pkg/handlers"
-	"github.com/Onelvay/docker-compose-project/pkg/server"
+	handlersC "github.com/Onelvay/docker-compose-project/pkg/handlers"
+	routes "github.com/Onelvay/docker-compose-project/pkg/routes"
 	"github.com/Onelvay/docker-compose-project/pkg/service"
 	redisClient "github.com/Onelvay/docker-compose-project/redis"
 	"github.com/go-redis/redis"
 	"github.com/spf13/viper"
+	"go.mongodb.org/mongo-driver/mongo"
 	"gorm.io/gorm"
 )
 
@@ -45,8 +46,8 @@ func main() {
 
 	userContr := contr.NewUserController(userDb, tokenDb, hasher, orderDb)
 	handlers := contr.NewHandlers(productDb, &userContr, orderDb, tokenDb)
-	class := handlersss.NewUserHandler(&userContr, userDb)
-	router := server.InitRoutes(handlers, *class)
+	class := handlersC.NewUserHandler(&userContr, userDb)
+	router := routes.InitRoutes(handlers, *class)
 	var PORT string
 	if PORT = os.Getenv("PORT"); PORT == "" {
 		PORT = "8080"
@@ -64,7 +65,7 @@ func initConfig() error {
 	return viper.ReadInConfig()
 }
 
-func initDbControllers(postgres *gorm.DB, redis *redis.Client, mongo *mongoDb.MongoDB) (*contr.ProductDBController, *contr.UserPostgres, *contr.TokenPostgres, *contr.OrderController) {
+func initDbControllers(postgres *gorm.DB, redis *redis.Client, mongo *mongo.Collection) (*contr.ProductDBController, *contr.UserPostgres, *contr.TokenPostgres, *contr.OrderController) {
 	productDb := contr.NewProductDbController(mongo, redis)
 	userDb := contr.NewUserDbController(postgres)
 	tokenDb := contr.NewTokenDbController(postgres)

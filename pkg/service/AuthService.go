@@ -25,13 +25,13 @@ type Transactioner interface {
 	CreateInfoOrder(domain.FinalResponse) error
 }
 
-type ProductPostgreser interface {
-	GetBooks(bool) ([]domain.Product, error)
-	GetBookById(string) (domain.Product, error)
-	GetBooksByName(string) ([]domain.Product, error)
-	DeleteBookById(string) error
-	CreateBook(string, float64, string) error
-	UpdateBook(string, string, string, float64) error
+type ProductDbActioner interface {
+	GetProducts(bool) ([]domain.Product, error)
+	GetProductById(uint64) (domain.Product, error)
+	GetProductsByName(string) ([]domain.Product, error)
+	// DeleteBookById(string) error
+	// CreateBook(string, float64, string) error
+	// UpdateBook(string, string, string, float64) error
 }
 type UserController interface {
 	SignUp(ctx context.Context, inp domain.SignUpInput) error

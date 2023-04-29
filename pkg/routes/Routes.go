@@ -22,15 +22,15 @@ func InitRoutes(f *rest.HandleFunctions, test handlers.UserHandler) *mux.Router 
 		user.HandleFunc("/orders", nil).Methods("Get")
 		user.HandleFunc("/orders", nil).Methods("POST")
 	}
-	books := router.PathPrefix("/books").Subrouter()
+	products := router.PathPrefix("/books").Subrouter()
 	{
 		// books.Use(f.Auth.AuthMiddleware)
-		books.HandleFunc("", f.Book.GetBooks).Methods("GET")
-		books.HandleFunc("/{id}", f.Book.GetBookById).Methods("GET")
-		books.HandleFunc("/{id}", f.Book.UpdateBook).Methods("PUT")
-		books.HandleFunc("/{id}", f.Book.DeleteBookById).Methods("DELETE")
-		router.HandleFunc("/create", f.Book.CreateBook).Methods("POST")
-		router.HandleFunc("/search", f.Book.GetBooksByName).Methods("GET")
+		products.HandleFunc("", f.Product.GetProducts).Methods("GET")
+		products.HandleFunc("/{id}", f.Product.GetProductById).Methods("GET")
+		// books.HandleFunc("/{id}", f.Book.UpdateBook).Methods("PUT")
+		// books.HandleFunc("/{id}", f.Book.DeleteBookById).Methods("DELETE")
+		// router.HandleFunc("/create", f.Book.CreateBook).Methods("POST")
+		router.HandleFunc("/search", f.Product.GetProductsByName).Methods("GET")
 
 	}
 	payment := router.PathPrefix("/order").Subrouter()

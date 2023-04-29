@@ -4,90 +4,72 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 
-	mongoDB "github.com/Onelvay/docker-compose-project/db/mongoDB"
+	"go.mongodb.org/mongo-driver/mongo"
+
+	// mongoDb "github.com/Onelvay/docker-compose-project/db/mongoDB"
 	"github.com/Onelvay/docker-compose-project/pkg/domain"
 	"github.com/go-redis/redis"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
+	_ "go.mongodb.org/mongo-driver/mongo"
 )
 
 type ProductDBController struct {
 	db          *mongo.Collection
-	mongoCtx    context.Context
 	redisClient *redis.Client
 }
 
-func NewProductDbController(db *mongoDB.MongoDB, redis *redis.Client) *ProductDBController {
-	return &ProductDBController{db.Db, db.Ctx, redis}
+func NewProductDbController(collection *mongo.Collection, redis *redis.Client) *ProductDBController {
+	return &ProductDBController{collection, redis}
 }
 
-var Products []domain.Product
-
-func (p *ProductDBController) GetBookById(id uint) (domain.Product, error) {
-	product, err := productExistInRedis(p.redisClient, id)
+func (p *ProductDBController) GetProductById(id uint64) (domain.Product, error) {
+	product, err := getProductFromRedisById(p.redisClient, id)
 	if err == nil {
 		return product, nil
-	} else {
-		log.Println(err)
 	}
-	err = p.db.FindOne(p.mongoCtx, bson.M{"id": id}).Decode(&product)
-	if err != nil {
-		return product, err
+
+	if err = p.db.FindOne(context.Background(), bson.M{"id": id}).Decode(&product); err != nil {
+		return product, errors.New(fmt.Sprint("no product with this id :", id))
 	}
-	if product.Id == 0 {
-		return product, errors.New(fmt.Sprint("no product with id:", id))
-	}
-	saveBookInRedis(p.redisClient, product)
+
+	saveProductInRedis(p.redisClient, product)
 	return product, nil
 }
 
-// func (r *BookstorePostgres) GetBookById(id string) (domain.Book, error) {
-// 	val, err := r.redisClient.Get(id).Result()
-// 	if err == nil {
-// 		err = json.Unmarshal([]byte(val), &book)
-// 		if err != nil {
-// 			return domain.Book{}, errors.New("problem with unmarshalling in postgresBookDB")
-// 		}
-// 		return book, nil
-// 	}
+func (p *ProductDBController) GetProductsByName(name string) ([]domain.Product, error) {
+	rproducts, err := getProductsFromRedisByName(p.redisClient, name)
+	if err == nil {
+		return rproducts, nil
+	}
+	var products []domain.Product
+	cursor, err := p.db.Find(context.Background(), bson.M{"name": name})
+	if err != nil {
+		return products, err
+	}
+	if err = cursor.All(context.Background(), &products); err != nil {
+		return products, err
+	}
+	saveProductsInRedis(p.redisClient, name, products)
+	return products, nil
+}
 
-// 	res := r.Db.Where("id = ?", id).Find(&book)
-// 	if res.RowsAffected == 0 {
-// 		return domain.Book{}, errors.New("book not found")
-// 	}
-
-// 	saveBookInRedis(r.redisClient)
-
-// 	return book, nil
-// }
-// func (r *BookstorePostgres) GetBooksByName(name string) ([]domain.Book, error) {
-// 	val, err := r.redisClient.Get(name).Result()
-// 	if err == nil {
-// 		err = json.Unmarshal([]byte(val), &books)
-// 		if err == nil {
-// 			return books, nil
-// 		}
-// 	}
-// 	res := r.Db.Where("name = ?", name).Find(&books)
-// 	if res.RowsAffected == 0 {
-// 		return []domain.Book{}, fmt.Errorf("no books with name %s", name)
-// 	}
-
-// 	saveBooksInRedis(r.redisClient, name)
-// 	return books, nil
-// }
-
-// func (r *BookstorePostgres) GetBooks(sorted bool) ([]domain.Book, error) {
-// 	var res *gorm.DB
-// 	if sorted {
-// 		res = r.Db.Order("price").Find(&books)
-// 	} else {
-// 		res = r.Db.Order("price desc").Find(&books)
-// 	}
-// 	return books, res.Error
-// }
+func (p *ProductDBController) GetProducts(sorted bool) ([]domain.Product, error) {
+	rproducts, err := getProductsFromRedisByName(p.redisClient, "all")
+	if err == nil {
+		return rproducts, nil
+	}
+	var products []domain.Product
+	cur, err := p.db.Find(context.Background(), bson.D{})
+	if err != nil {
+		return products, err
+	}
+	if err = cur.All(context.Background(), &products); err != nil {
+		return products, err
+	}
+	saveProductsInRedis(p.redisClient, "all", products)
+	return products, nil
+}
 
 // func (r *BookstorePostgres) DeleteBookById(id string) error {
 // 	res := r.Db.Where("id=?", id).Delete(&domain.Book{})
@@ -126,15 +108,4 @@ func (p *ProductDBController) GetBookById(id uint) (domain.Product, error) {
 // 		return res.Error
 // 	}
 // 	return res
-// }
-
-// func saveBooksInRedis(r *redis.Client, name string) {
-// 	j, err := json.Marshal(books)
-// 	if err != nil {
-// 		log.Fatalln(err)
-// 	}
-// 	err = r.Set(name, j, 0).Err()
-// 	if err != nil {
-// 		fmt.Println(err)
-// 	}
 // }

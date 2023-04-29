@@ -2,9 +2,12 @@ package handlers
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
+	"strconv"
 	"strings"
 	"sync"
 
@@ -18,19 +21,21 @@ import (
 
 var Mutex sync.Mutex
 
-type OrderHandlers struct {
-	order          service.Transactioner
-	db             service.ProductPostgreser
-	token          service.TokenDbActioner
-	userController service.UserController
-}
+type (
+	OrderHandlers struct {
+		order          service.Transactioner
+		db             service.ProductDbActioner
+		token          service.TokenDbActioner
+		userController service.UserController
+	}
 
-func NewOrderHandler(t service.Transactioner, db service.ProductPostgreser, token service.TokenDbActioner, userController service.UserController) OrderHandlers {
+	OrderJSON struct {
+		Product_id string
+	}
+)
+
+func NewOrderHandler(t service.Transactioner, db service.ProductDbActioner, token service.TokenDbActioner, userController service.UserController) OrderHandlers {
 	return OrderHandlers{t, db, token, userController}
-}
-
-type OrderJSON struct {
-	Product_id string
 }
 
 func getUserIdFromBearerToken(w http.ResponseWriter, r *http.Request, s service.UserController) string {
@@ -50,22 +55,25 @@ func getUserIdFromBearerToken(w http.ResponseWriter, r *http.Request, s service.
 func (s *OrderHandlers) CreateOrder(w http.ResponseWriter, r *http.Request) {
 	reqBytes, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		fmt.Println(err)
+		log.Fatalln(err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	var inp OrderJSON
 	if err = json.Unmarshal(reqBytes, &inp); err != nil { //принятие данных джейсон
-		fmt.Println(err)
+		log.Fatalln(err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	userId := getUserIdFromBearerToken(w, r, s.userController)
-
-	product, err := s.db.GetBookById(inp.Product_id)
+	productId, err := strconv.ParseUint(inp.Product_id, 10, 0)
 	if err != nil {
-		fmt.Println(err)
+		panic(errors.New("problem with uint64"))
+	}
+	product, err := s.db.GetProductById(productId)
+	if err != nil {
+		log.Fatalln(err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
