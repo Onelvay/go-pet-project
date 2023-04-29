@@ -46,7 +46,7 @@ func main() {
 
 	userContr := contr.NewUserController(userDb, tokenDb, hasher, orderDb)
 	handlers := contr.NewHandlers(productDb, &userContr, orderDb, tokenDb)
-	class := handlersC.NewUserHandler(&userContr, userDb)
+	class := handlersC.NewUserHandler(&userContr, userDb, productDb)
 	router := routes.InitRoutes(handlers, *class)
 	var PORT string
 	if PORT = os.Getenv("PORT"); PORT == "" {

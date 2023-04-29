@@ -29,7 +29,7 @@ func InitRoutes(f *rest.HandleFunctions, test handlers.UserHandler) *mux.Router 
 		products.HandleFunc("/{id}", f.Product.GetProductById).Methods("GET")
 		// books.HandleFunc("/{id}", f.Book.UpdateBook).Methods("PUT")
 		// books.HandleFunc("/{id}", f.Book.DeleteBookById).Methods("DELETE")
-		// router.HandleFunc("/create", f.Book.CreateBook).Methods("POST")
+		router.HandleFunc("/create", f.Product.CreateProduct).Methods("POST")
 		router.HandleFunc("/search", f.Product.GetProductsByName).Methods("GET")
 
 	}

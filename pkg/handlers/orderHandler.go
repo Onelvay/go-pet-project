@@ -7,7 +7,6 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"strconv"
 	"strings"
 	"sync"
 
@@ -30,7 +29,7 @@ type (
 	}
 
 	OrderJSON struct {
-		Product_id string
+		Product_id uint
 	}
 )
 
@@ -67,11 +66,10 @@ func (s *OrderHandlers) CreateOrder(w http.ResponseWriter, r *http.Request) {
 	}
 
 	userId := getUserIdFromBearerToken(w, r, s.userController)
-	productId, err := strconv.ParseUint(inp.Product_id, 10, 0)
 	if err != nil {
 		panic(errors.New("problem with uint64"))
 	}
-	product, err := s.db.GetProductById(productId)
+	product, err := s.db.GetProductById(uint64(inp.Product_id))
 	if err != nil {
 		log.Fatalln(err)
 		w.WriteHeader(http.StatusBadRequest)
@@ -87,7 +85,7 @@ func (s *OrderHandlers) CreateOrder(w http.ResponseWriter, r *http.Request) {
 		Amount:            price,
 		ProductId:         fmt.Sprint(product.Id),
 		Currency:          "USD",
-		ServerCallbackURL: "https://2d3c-80-242-211-179.ngrok-free.app/order/callback",
+		ServerCallbackURL: "https://935d-109-239-34-71.ngrok-free.app/order/callback",
 	}
 	api, err := client.CreateOrder(*checkoutRequest) //отправляем запрос на заказ
 	if err != nil {

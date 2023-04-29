@@ -55,10 +55,6 @@ func (p *ProductDBController) GetProductsByName(name string) ([]domain.Product, 
 }
 
 func (p *ProductDBController) GetProducts(sorted bool) ([]domain.Product, error) {
-	rproducts, err := getProductsFromRedisByName(p.redisClient, "all")
-	if err == nil {
-		return rproducts, nil
-	}
 	var products []domain.Product
 	cur, err := p.db.Find(context.Background(), bson.D{})
 	if err != nil {
@@ -67,27 +63,20 @@ func (p *ProductDBController) GetProducts(sorted bool) ([]domain.Product, error)
 	if err = cur.All(context.Background(), &products); err != nil {
 		return products, err
 	}
-	saveProductsInRedis(p.redisClient, "all", products)
 	return products, nil
+}
+func (p *ProductDBController) CreateProduct(product domain.Product) error {
+	_, err := p.db.InsertOne(context.Background(), product)
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+	saveProductInRedis(p.redisClient, product)
+	return err
 }
 
 // func (r *BookstorePostgres) DeleteBookById(id string) error {
 // 	res := r.Db.Where("id=?", id).Delete(&domain.Book{})
-// 	return res.Error
-// }
-// func (r *BookstorePostgres) CreateBook(name string, price float64, descr string) error {
-// 	byteid := uuid.New()
-// 	id := strings.Replace(byteid.String(), "-", "", -1)
-
-// 	res := r.Db.Create(&domain.Book{
-// 		Id:          id,
-// 		Name:        name,
-// 		Description: descr,
-// 		Price:       price,
-// 	})
-
-// 	saveBookInRedis(r.redisClient)
-
 // 	return res.Error
 // }
 

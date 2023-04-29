@@ -3,9 +3,11 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"strconv"
 
+	"github.com/Onelvay/docker-compose-project/pkg/domain"
 	"github.com/Onelvay/docker-compose-project/pkg/service"
 	"github.com/gorilla/mux"
 )
@@ -55,6 +57,19 @@ func (s *ProductHandler) GetProductsByName(w http.ResponseWriter, r *http.Reques
 	}
 	json.NewEncoder(w).Encode(products)
 }
+func (s *ProductHandler) CreateProduct(w http.ResponseWriter, r *http.Request) {
+	reqBytes, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Println(err)
+	}
+	var inp domain.Product
+	if err = json.Unmarshal(reqBytes, &inp); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Println(err)
+	}
+	s.db.CreateProduct(inp)
+}
 
 // func (s *ProductHandler) DeleteBookById(w http.ResponseWriter, r *http.Request) {
 // 	id := mux.Vars(r)["id"]
@@ -63,17 +78,6 @@ func (s *ProductHandler) GetProductsByName(w http.ResponseWriter, r *http.Reques
 // 		w.WriteHeader(http.StatusAccepted)
 // 	} else {
 // 		w.WriteHeader(http.StatusNotFound)
-// 	}
-// }
-// func (s *ProductHandler) CreateBook(w http.ResponseWriter, r *http.Request) {
-// 	name := r.URL.Query().Get("name")
-// 	desc := r.URL.Query().Get("desc")
-// 	price_str := r.URL.Query().Get("price")
-// 	price, _ := strconv.ParseFloat(price_str, 64)
-// 	if name != "" && desc != "" && price != 0 && s.db.CreateBook(name, price, desc) == nil {
-// 		w.WriteHeader(http.StatusAccepted)
-// 	} else {
-// 		w.WriteHeader(http.StatusBadRequest)
 // 	}
 // }
 

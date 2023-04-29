@@ -51,3 +51,15 @@ func saveProductsInRedis(r *redis.Client, name string, products []domain.Product
 		fmt.Println(err)
 	}
 }
+func deleteRedisKey(r *redis.Client, key string) {
+	err := r.Del("", key)
+	if err != nil {
+		fmt.Println(err)
+	}
+}
+func updateRedisValueByKey(r *redis.Client, key string, value string) {
+	err := r.Set(key, value, 0).Err()
+	if err != nil {
+		fmt.Println(err)
+	}
+}

@@ -3,7 +3,7 @@ package mongoDB
 import (
 	"context"
 	"log"
-	"time"
+
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -20,4 +20,3 @@ func MongoProductCollection() *mongo.Collection {
 	collection := client.Database("products").Collection("products")
 	return collection
 }
-s

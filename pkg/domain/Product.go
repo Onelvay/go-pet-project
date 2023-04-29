@@ -2,11 +2,11 @@ package domain
 
 type (
 	Product struct {
-		Id             uint64         `json:"id" bson:"id"`
+		Id             uint64         `json:"id" bson:"_id"`
 		Name           string         `json:"name" bson:"name"`
 		Price          float64        `json:"price" bson:"price"`
 		Description    string         `json:"description" bson:"description"`
-		Сharacteristic Сharacteristic `bson:"characteristic"`
+		Сharacteristic Сharacteristic `json:"characteristic" bson:"characteristic"`
 	}
 	Сharacteristic struct {
 		Category string  `json:"category" bson:"category,omitempty"`

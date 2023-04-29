@@ -20,16 +20,18 @@ type Refresh_token struct {
 	User User `gorm:"references:ID"`
 }
 
-type SignUpInput struct {
-	Name     string `json:"name" validate:"required,gte=2"`
-	Email    string `json:"email" validate:"required,email"`
-	Password string `json:"password" validate:"required,gte=4"`
-}
+type (
+	SignUpInput struct {
+		Name     string `json:"name" validate:"required,gte=2"`
+		Email    string `json:"email" validate:"required,email"`
+		Password string `json:"password" validate:"required,gte=4"`
+	}
 
-type SignInInput struct {
-	Email    string `json:"email" validate:"required,email"`
-	Password string `json:"password" validate:"required,gte=4"`
-}
+	SignInInput struct {
+		Email    string `json:"email" validate:"required,email"`
+		Password string `json:"password" validate:"required,gte=4"`
+	}
+)
 
 func (i SignUpInput) Validate() error {
 	return validate.Struct(i)
