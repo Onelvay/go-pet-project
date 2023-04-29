@@ -9,6 +9,8 @@ services:
       - mongoDb
     environment:
       PORT: 8080
+    networks:
+      - backend
 
   postgres:
     image: "postgres" 
@@ -18,6 +20,8 @@ services:
       - database-data:/var/lib/postgresql/data/
     ports:
       - 5432:5432 
+    networks:
+      - backend
 
   mongoDb:
     image: "mongo"
@@ -25,6 +29,8 @@ services:
       - mongodb_data:/data/db
     ports:
       - "27017:27017"
+    networks:
+      - backend
 
   redis:
     image: redis
@@ -32,8 +38,13 @@ services:
       - "6379:6379"
     volumes:
       - redis_data:/data
+    networks:
+      - backend
   
 volumes:
   database-data:
   mongodb_data:
   redis_data:
+
+networks:
+  backend:
