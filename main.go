@@ -32,7 +32,7 @@ func main() {
 	)
 	client.InitConst(viper.GetString("payment.merchantId"), viper.GetString("payment.merchantPassword"), viper.GetString("payment.checkoutUrl"))
 
-	mongoProductDb := mongoDb.MongoProductCollection()
+	mongoProductDb := mongoDb.MongoProductCollection(viper.GetString("mongoDB.host"))
 	postgresDb := postgres.NewPostgresDb(*config)
 
 	redis, err := redisClient.InitRedis(viper.GetString("redis.host"), viper.GetString("redis.password"))

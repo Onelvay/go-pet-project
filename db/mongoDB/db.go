@@ -8,8 +8,8 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func MongoProductCollection() *mongo.Collection {
-	client, err := mongo.NewClient(options.Client().ApplyURI("mongodb://localhost:27017"))
+func MongoProductCollection(host string) *mongo.Collection {
+	client, err := mongo.NewClient(options.Client().ApplyURI(host))
 	if err != nil {
 		log.Fatal(err)
 	}
