@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"go.mongodb.org/mongo-driver/mongo"
+	"gorm.io/gorm"
 
 	// mongoDb "github.com/Onelvay/docker-compose-project/db/mongoDB"
 	"github.com/Onelvay/docker-compose-project/pkg/domain"
@@ -15,12 +16,13 @@ import (
 )
 
 type ProductDBController struct {
-	db          *mongo.Collection
+	mongo       *mongo.Collection
 	redisClient *redis.Client
+	postgres    *gorm.DB
 }
 
-func NewProductDbController(collection *mongo.Collection, redis *redis.Client) *ProductDBController {
-	return &ProductDBController{collection, redis}
+func NewProductDbController(collection *mongo.Collection, redis *redis.Client, postgres *gorm.DB) *ProductDBController {
+	return &ProductDBController{collection, redis, postgres}
 }
 
 func (p *ProductDBController) GetProductById(id uint64) (domain.Product, error) {
@@ -29,7 +31,7 @@ func (p *ProductDBController) GetProductById(id uint64) (domain.Product, error) 
 		return product, nil
 	}
 
-	if err = p.db.FindOne(context.Background(), bson.M{"_id": id}).Decode(&product); err != nil {
+	if err = p.mongo.FindOne(context.Background(), bson.M{"_id": id}).Decode(&product); err != nil {
 		return product, errors.New(fmt.Sprint("no product with this id :", id))
 	}
 
@@ -43,7 +45,7 @@ func (p *ProductDBController) GetProductsByName(name string) ([]domain.Product, 
 		return rproducts, nil
 	}
 	var products []domain.Product
-	cursor, err := p.db.Find(context.Background(), bson.M{"name": name})
+	cursor, err := p.mongo.Find(context.Background(), bson.M{"name": name})
 	if err != nil {
 		return products, err
 	}
@@ -54,9 +56,9 @@ func (p *ProductDBController) GetProductsByName(name string) ([]domain.Product, 
 	return products, nil
 }
 
-func (p *ProductDBController) GetProducts(sorted bool) ([]domain.Product, error) {
+func (p *ProductDBController) GetProducts() ([]domain.Product, error) {
 	var products []domain.Product
-	cur, err := p.db.Find(context.Background(), bson.D{})
+	cur, err := p.mongo.Find(context.Background(), bson.D{})
 	if err != nil {
 		return products, err
 	}
@@ -66,15 +68,20 @@ func (p *ProductDBController) GetProducts(sorted bool) ([]domain.Product, error)
 	return products, nil
 }
 func (p *ProductDBController) CreateProduct(product domain.Product) error {
-	_, err := p.db.InsertOne(context.Background(), product)
+	_, err := p.mongo.InsertOne(context.Background(), product)
 	if err != nil {
-		fmt.Println(err)
 		return err
 	}
 	saveProductInRedis(p.redisClient, product)
 	return err
 }
 func (p *ProductDBController) DeleteProductById(id uint64) error {
-	_, err := p.db.DeleteOne(context.Background(), bson.M{"_id": id})
+	_, err := p.mongo.DeleteOne(context.Background(), bson.M{"_id": id})
 	return err
+}
+func (p *ProductDBController) GetProductRating(id uint) float64 {
+	var result float64
+	p.postgres.Table("final_responses").Where("product_id = ?", fmt.Sprint(id)).Select("AVG(rating)").Group("product_id").Pluck("AVG(rating)", &result)
+
+	return result
 }

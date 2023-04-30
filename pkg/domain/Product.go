@@ -7,6 +7,8 @@ type (
 		Price          float64        `json:"price" bson:"price"`
 		Description    string         `json:"description" bson:"description"`
 		Сharacteristic Сharacteristic `json:"characteristic" bson:"characteristic"`
+		User_id        string         `bson:"user_id"`
+		Rating         float64        `bson:"-"`
 	}
 	Сharacteristic struct {
 		Category string  `json:"category" bson:"category,omitempty"`

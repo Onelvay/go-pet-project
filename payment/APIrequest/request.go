@@ -9,15 +9,15 @@ import (
 	"github.com/fatih/structs"
 )
 
-type APIRequest struct {
-	Request interface{} `json:"request"`
-}
-type APIResponse struct {
-	Response interface{} `json:"response"`
-}
-type APIResponce struct {
-	Responce interface{} `json:"responce"`
-}
+type (
+	APIRequest struct {
+		Request interface{} `json:"request"`
+	}
+	APIResponse struct {
+		Response interface{} `json:"response"`
+	}
+)
+
 type CheckoutRequest struct {
 	Sender_account    string `json:"sender_account"`
 	OrderId           string `json:"order_id"`

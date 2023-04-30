@@ -1,8 +1,6 @@
 package controller
 
 import (
-	"time"
-
 	"github.com/Onelvay/docker-compose-project/pkg/domain"
 	"gorm.io/gorm"
 )
@@ -33,9 +31,7 @@ func (o *OrderController) CreateInfoOrder(api domain.FinalResponse) error {
 		ProductId:    api.ProductId,
 		ActualAmount: api.ActualAmount,
 		OrderStatus:  api.OrderStatus,
-		PaymentId:    api.PaymentId,
 		SenderEmail:  api.SenderEmail,
-		OrderTime:    time.Now(),
 	})
 	return result.Error
 }

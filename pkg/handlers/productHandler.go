@@ -3,12 +3,10 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/http"
+	"sort"
 	"strconv"
-	"time"
 
-	"github.com/Onelvay/docker-compose-project/pkg/domain"
 	"github.com/Onelvay/docker-compose-project/pkg/service"
 	"github.com/gorilla/mux"
 )
@@ -22,12 +20,22 @@ func NewProductHandler(db service.ProductDbActioner) *ProductHandler {
 }
 
 func (s *ProductHandler) GetProducts(w http.ResponseWriter, r *http.Request) { //ниже все понятно думаю
-	URLsort := r.URL.Query().Get("sorted")
-	sort := false
-	if URLsort == "true" {
-		sort = true
+	URLsort := r.URL.Query().Get("sort")
+	products, err := s.db.GetProducts()
+	for i, v := range products {
+		rating := s.db.GetProductRating(uint(v.Id))
+		products[i].Rating = rating
 	}
-	products, err := s.db.GetProducts(sort)
+	if URLsort == "rating" {
+		sort.Slice(products, func(i, j int) bool {
+			return products[i].Rating > products[j].Rating
+		})
+	} else if URLsort == "price" {
+		sort.Slice(products, func(i, j int) bool {
+			return products[i].Price > products[j].Price
+		})
+	}
+
 	if err != nil {
 		http.Error(w, fmt.Sprint(err), http.StatusInternalServerError)
 		return
@@ -58,26 +66,6 @@ func (s *ProductHandler) GetProductsByName(w http.ResponseWriter, r *http.Reques
 		return
 	}
 	json.NewEncoder(w).Encode(products)
-}
-func (s *ProductHandler) CreateProduct(w http.ResponseWriter, r *http.Request) {
-	reqBytes, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		http.Error(w, fmt.Sprint(err), http.StatusInternalServerError)
-		return
-	}
-	now := time.Now()
-	seconds := now.Unix()
-	uintTime := uint64(seconds)
-	if err != nil {
-		panic(err)
-	}
-	var inp domain.Product
-	if err = json.Unmarshal(reqBytes, &inp); err != nil {
-		http.Error(w, fmt.Sprint(err), http.StatusInternalServerError)
-		return
-	}
-	inp.Id = uintTime
-	s.db.CreateProduct(inp)
 }
 
 func (s *ProductHandler) DeleteProductById(w http.ResponseWriter, r *http.Request) {

@@ -2,9 +2,11 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/Onelvay/docker-compose-project/pkg/domain"
 	"github.com/Onelvay/docker-compose-project/pkg/service"
@@ -57,6 +59,34 @@ func (u *UserHandler) AddDetailToOrder(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		log.Println(err)
+	}
+	w.WriteHeader(http.StatusOK)
+}
+func (u *UserHandler) CreateProduct(w http.ResponseWriter, r *http.Request) {
+	reqBytes, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, fmt.Sprint(err), http.StatusInternalServerError)
+		return
+	}
+	now := time.Now()
+	seconds := now.Unix()
+	uintTime := uint64(seconds)
+	if err != nil {
+		http.Error(w, fmt.Sprint(err), http.StatusInternalServerError)
+		return
+	}
+	var inp domain.Product
+	if err = json.Unmarshal(reqBytes, &inp); err != nil {
+		http.Error(w, fmt.Sprint(err), http.StatusInternalServerError)
+		return
+	}
+	inp.Id = uintTime
+	userId := getUserIdFromBearerToken(w, r, u.userController)
+	inp.User_id = userId
+	err = u.productDb.CreateProduct(inp)
+	if err != nil {
+		http.Error(w, fmt.Sprint(err), http.StatusInternalServerError)
+		return
 	}
 	w.WriteHeader(http.StatusOK)
 }

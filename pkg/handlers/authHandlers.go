@@ -46,7 +46,7 @@ func (s *AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 
 }
 func (h *AuthHandler) Refresh(w http.ResponseWriter, r *http.Request) {
-	cookie, err := r.Cookie("refresh-token") //берем с куки рефреш токен
+	cookie, err := r.Cookie("refresh-token")
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		log.Println(err)
@@ -58,7 +58,7 @@ func (h *AuthHandler) Refresh(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		log.Println(err)
 	}
-	responce, err := json.Marshal(map[string]string{ //форматируем в джейсон
+	responce, err := json.Marshal(map[string]string{
 		"token": accessToken,
 	})
 	if err != nil {

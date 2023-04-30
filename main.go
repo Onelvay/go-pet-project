@@ -42,10 +42,10 @@ func main() {
 
 	productDb, userDb, tokenDb, orderDb := initDbControllers(postgresDb, redis, mongoProductDb)
 	hasher := service.NewHasher(viper.GetString("app.hash"))
-
 	userContr := contr.NewUserController(userDb, tokenDb, hasher, orderDb)
 	handlers := contr.NewHandlers(productDb, &userContr, orderDb, tokenDb, userDb)
 	router := routes.InitRoutes(handlers)
+
 	var PORT string
 	if PORT = os.Getenv("PORT"); PORT == "" {
 		PORT = "8080"
@@ -64,7 +64,7 @@ func initConfig() error {
 }
 
 func initDbControllers(postgres *gorm.DB, redis *redis.Client, mongo *mongo.Collection) (*contr.ProductDBController, *contr.UserPostgres, *contr.TokenPostgres, *contr.OrderController) {
-	productDb := contr.NewProductDbController(mongo, redis)
+	productDb := contr.NewProductDbController(mongo, redis, postgres)
 	userDb := contr.NewUserDbController(postgres)
 	tokenDb := contr.NewTokenDbController(postgres)
 	order := contr.NewOrderDbController(postgres)

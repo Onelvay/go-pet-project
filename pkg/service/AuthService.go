@@ -27,11 +27,12 @@ type Transactioner interface {
 }
 
 type ProductDbActioner interface {
-	GetProducts(bool) ([]domain.Product, error)
+	GetProducts() ([]domain.Product, error)
 	GetProductById(uint64) (domain.Product, error)
 	GetProductsByName(string) ([]domain.Product, error)
 	DeleteProductById(id uint64) error
 	CreateProduct(domain.Product) error
+	GetProductRating(id uint) float64
 }
 type UserController interface {
 	SignUp(ctx context.Context, inp domain.SignUpInput) error

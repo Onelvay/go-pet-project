@@ -43,8 +43,9 @@ func (r *UserPostgres) GetUserOrders(id string) ([]uint, error) {
 }
 
 func (o *UserPostgres) AddDetailToOrder(req domain.OrderDetail) error {
-	row := o.db.Where("id = ? user_id=?", req.Order_id, req.User_id)
-	if row.RowsAffected == 1 {
+	var res domain.Order
+	result := o.db.Where("id = ? and user_id = ?", req.Order_id, req.User_id).Find(&res)
+	if result.RowsAffected == 1 {
 		if err := o.db.Model(&domain.FinalResponse{}).Where("order_id = ?", req.Order_id).Update("comment", req.Comment).Error; err != nil {
 			return err
 		}
@@ -53,5 +54,5 @@ func (o *UserPostgres) AddDetailToOrder(req domain.OrderDetail) error {
 		}
 		return nil
 	}
-	return errors.New("У пользователя нет такого заказа")
+	return errors.New("y пользователя нет такого заказа")
 }

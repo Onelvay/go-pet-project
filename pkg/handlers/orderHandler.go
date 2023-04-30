@@ -7,7 +7,6 @@ import (
 	"log"
 	"net/http"
 	"strings"
-	"sync"
 
 	request "github.com/Onelvay/docker-compose-project/payment/APIrequest"
 	"github.com/Onelvay/docker-compose-project/payment/client"
@@ -16,8 +15,6 @@ import (
 
 	"github.com/google/uuid"
 )
-
-var Mutex sync.Mutex
 
 type (
 	OrderHandlers struct {
@@ -80,7 +77,7 @@ func (s *OrderHandlers) CreateOrder(w http.ResponseWriter, r *http.Request) {
 		Amount:            price,
 		ProductId:         fmt.Sprint(product.Id),
 		Currency:          "USD",
-		ServerCallbackURL: "https://68ff-109-239-34-71.ngrok-free.app/order/callback",
+		ServerCallbackURL: "https://9beb-109-239-34-71.ngrok-free.app/order/callback",
 	}
 	api, err := client.CreateOrder(*checkoutRequest)
 	if err != nil {
