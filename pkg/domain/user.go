@@ -12,8 +12,4 @@ type (
 		Password     string    `json:"password"`
 		RegisteredAt time.Time `json:"registered_at"`
 	}
-
-	UserOrders struct {
-		ProductId string
-	}
 )

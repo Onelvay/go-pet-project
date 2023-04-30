@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/Onelvay/docker-compose-project/pkg/domain"
 	"github.com/Onelvay/docker-compose-project/pkg/service"
@@ -16,8 +17,8 @@ type ProductHandler struct {
 	db service.ProductDbActioner
 }
 
-func NewProductHandler(db service.ProductDbActioner) ProductHandler {
-	return ProductHandler{db}
+func NewProductHandler(db service.ProductDbActioner) *ProductHandler {
+	return &ProductHandler{db}
 }
 
 func (s *ProductHandler) GetProducts(w http.ResponseWriter, r *http.Request) { //ниже все понятно думаю
@@ -28,8 +29,8 @@ func (s *ProductHandler) GetProducts(w http.ResponseWriter, r *http.Request) { /
 	}
 	products, err := s.db.GetProducts(sort)
 	if err != nil {
-		fmt.Println(err)
-		w.WriteHeader(http.StatusInternalServerError)
+		http.Error(w, fmt.Sprint(err), http.StatusInternalServerError)
+		return
 	}
 	json.NewEncoder(w).Encode(products)
 }
@@ -37,13 +38,13 @@ func (s *ProductHandler) GetProductById(w http.ResponseWriter, r *http.Request) 
 	id := mux.Vars(r)["id"]
 	uintid, err := strconv.ParseUint(id, 10, 0)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		fmt.Println(err)
+		http.Error(w, fmt.Sprint(err), http.StatusBadRequest)
+		return
 	}
 	product, err := s.db.GetProductById(uintid)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		fmt.Println(err)
+		http.Error(w, fmt.Sprint(err), http.StatusBadRequest)
+		return
 	}
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(product)
@@ -53,45 +54,43 @@ func (s *ProductHandler) GetProductsByName(w http.ResponseWriter, r *http.Reques
 	name := r.URL.Query().Get("name")
 	products, err := s.db.GetProductsByName(name)
 	if err != nil {
-		w.WriteHeader(http.StatusNotFound)
+		http.Error(w, fmt.Sprint(err), http.StatusNotFound)
+		return
 	}
 	json.NewEncoder(w).Encode(products)
 }
 func (s *ProductHandler) CreateProduct(w http.ResponseWriter, r *http.Request) {
 	reqBytes, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Println(err)
+		http.Error(w, fmt.Sprint(err), http.StatusInternalServerError)
+		return
+	}
+	now := time.Now()
+	seconds := now.Unix()
+	uintTime := uint64(seconds)
+	if err != nil {
+		panic(err)
 	}
 	var inp domain.Product
 	if err = json.Unmarshal(reqBytes, &inp); err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Println(err)
+		http.Error(w, fmt.Sprint(err), http.StatusInternalServerError)
+		return
 	}
+	inp.Id = uintTime
 	s.db.CreateProduct(inp)
 }
 
-// func (s *ProductHandler) DeleteBookById(w http.ResponseWriter, r *http.Request) {
-// 	id := mux.Vars(r)["id"]
-// 	res := s.db.DeleteBookById(id)
-// 	if res == nil {
-// 		w.WriteHeader(http.StatusAccepted)
-// 	} else {
-// 		w.WriteHeader(http.StatusNotFound)
-// 	}
-// }
-
-// func (s *ProductHandler) UpdateBook(w http.ResponseWriter, r *http.Request) {
-// 	id := mux.Vars(r)["id"]
-// 	name := r.URL.Query().Get("name")
-// 	desc := r.URL.Query().Get("desc")
-// 	price_str := r.URL.Query().Get("price")
-// 	price, _ := strconv.ParseFloat(price_str, 64)
-// 	res := s.db.UpdateBook(id, name, desc, price)
-// 	if res == nil {
-// 		w.WriteHeader(http.StatusAccepted)
-// 	} else {
-// 		w.WriteHeader(http.StatusBadRequest)
-// 	}
-
-// }
+func (s *ProductHandler) DeleteProductById(w http.ResponseWriter, r *http.Request) {
+	id := mux.Vars(r)["id"]
+	uintId, err := strconv.ParseUint(id, 10, 0)
+	if err != nil {
+		http.Error(w, fmt.Sprint(err), http.StatusBadRequest)
+		return
+	}
+	err = s.db.DeleteProductById(uintId)
+	if err != nil {
+		http.Error(w, fmt.Sprint(err), http.StatusNotFound)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+}

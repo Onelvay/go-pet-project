@@ -2,6 +2,7 @@ package controller
 
 import (
 	"context"
+	"errors"
 	"strings"
 
 	"github.com/Onelvay/docker-compose-project/pkg/domain"
@@ -37,16 +38,20 @@ func (r *UserPostgres) SignInUser(cxt context.Context, email, password string) (
 
 func (r *UserPostgres) GetUserOrders(id string) ([]uint, error) {
 	var orders []uint
-	// rows, err := r.db.Table("final_responses").Select("final_responses.product_id").Joins("join on orders.id=final_responses.order_id AND orders.user_id = ?", id).Rows()
 	r.db.Table("final_responses").Select("final_responses.product_id").Joins("INNER JOIN orders ON orders.id = final_responses.order_id").Where("orders.user_id = ?", id).Scan(&orders)
-	// r.db.InnerJoins("orders").Find(&orders)
-	// if err != nil {
-	// 	return []domain.FinalResponse{}, err
-	// }
-	// err = rows.Scan(&orders)
-	// if err != nil {
-	// 	return []domain.FinalResponse{}, err
-	// }
-	// fmt.Println(orders)
 	return orders, nil
+}
+
+func (o *UserPostgres) AddDetailToOrder(req domain.OrderDetail) error {
+	row := o.db.Where("id = ? user_id=?", req.Order_id, req.User_id)
+	if row.RowsAffected == 1 {
+		if err := o.db.Model(&domain.FinalResponse{}).Where("order_id = ?", req.Order_id).Update("comment", req.Comment).Error; err != nil {
+			return err
+		}
+		if err := o.db.Model(&domain.FinalResponse{}).Where("order_id = ?", req.Order_id).Update("rating", req.Rating).Error; err != nil {
+			return err
+		}
+		return nil
+	}
+	return errors.New("У пользователя нет такого заказа")
 }

@@ -10,7 +10,6 @@ import (
 	"github.com/Onelvay/docker-compose-project/db/postgres"
 	"github.com/Onelvay/docker-compose-project/payment/client"
 	contr "github.com/Onelvay/docker-compose-project/pkg/controller"
-	handlersC "github.com/Onelvay/docker-compose-project/pkg/handlers"
 	routes "github.com/Onelvay/docker-compose-project/pkg/routes"
 	"github.com/Onelvay/docker-compose-project/pkg/service"
 	redisClient "github.com/Onelvay/docker-compose-project/redis"
@@ -45,9 +44,8 @@ func main() {
 	hasher := service.NewHasher(viper.GetString("app.hash"))
 
 	userContr := contr.NewUserController(userDb, tokenDb, hasher, orderDb)
-	handlers := contr.NewHandlers(productDb, &userContr, orderDb, tokenDb)
-	class := handlersC.NewUserHandler(&userContr, userDb, productDb)
-	router := routes.InitRoutes(handlers, *class)
+	handlers := contr.NewHandlers(productDb, &userContr, orderDb, tokenDb, userDb)
+	router := routes.InitRoutes(handlers)
 	var PORT string
 	if PORT = os.Getenv("PORT"); PORT == "" {
 		PORT = "8080"

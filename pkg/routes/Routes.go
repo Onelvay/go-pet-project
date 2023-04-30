@@ -2,12 +2,13 @@ package server
 
 import (
 	rest "github.com/Onelvay/docker-compose-project/pkg/controller"
-	"github.com/Onelvay/docker-compose-project/pkg/handlers"
 	"github.com/gorilla/mux"
 )
 
-func InitRoutes(f *rest.HandleFunctions, test handlers.UserHandler) *mux.Router {
+func InitRoutes(f *rest.HandleFunctions) *mux.Router {
 	router := mux.NewRouter().StrictSlash(true)
+
+	router.HandleFunc("/search", f.Product.GetProductsByName).Methods("GET")
 
 	auth := router.PathPrefix("/auth").Subrouter()
 	{
@@ -18,24 +19,20 @@ func InitRoutes(f *rest.HandleFunctions, test handlers.UserHandler) *mux.Router 
 
 	user := router.PathPrefix("/profile").Subrouter()
 	{
-		user.HandleFunc("", test.GetOrders).Methods("Get")
-		user.HandleFunc("/orders", nil).Methods("Get")
-		user.HandleFunc("/orders", nil).Methods("POST")
+		user.HandleFunc("/orders", f.User.GetOrders).Methods("Get")
+		user.HandleFunc("/orders", f.User.AddDetailToOrder).Methods("POST")
 	}
-	products := router.PathPrefix("/books").Subrouter()
+	products := router.PathPrefix("/products").Subrouter()
 	{
-		// books.Use(f.Auth.AuthMiddleware)
+		// products.Use(f.Auth.AuthMiddleware)
 		products.HandleFunc("", f.Product.GetProducts).Methods("GET")
 		products.HandleFunc("/{id}", f.Product.GetProductById).Methods("GET")
-		// books.HandleFunc("/{id}", f.Book.UpdateBook).Methods("PUT")
-		// books.HandleFunc("/{id}", f.Book.DeleteBookById).Methods("DELETE")
-		router.HandleFunc("/create", f.Product.CreateProduct).Methods("POST")
-		router.HandleFunc("/search", f.Product.GetProductsByName).Methods("GET")
-
+		products.HandleFunc("/{id}", f.Product.DeleteProductById).Methods("DELETE")
+		products.HandleFunc("/create", f.Product.CreateProduct).Methods("POST")
 	}
+
 	payment := router.PathPrefix("/order").Subrouter()
 	{
-		//payment.Use(f.User.AuthMiddleware)
 		payment.HandleFunc("", f.Order.CreateOrder).Methods("POST")
 		payment.HandleFunc("/callback", f.Order.Callback).Methods("POST")
 	}

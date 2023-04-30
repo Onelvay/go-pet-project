@@ -13,6 +13,7 @@ type UserDbActioner interface {
 	CreateUser(cnt context.Context, user domain.User) error
 	SignInUser(context.Context, string, string) (domain.User, error)
 	GetUserOrders(id string) ([]uint, error)
+	AddDetailToOrder(req domain.OrderDetail) error
 }
 type TokenDbActioner interface {
 	CreateToken(cnt context.Context, token domain.Refresh_token) error
@@ -29,9 +30,8 @@ type ProductDbActioner interface {
 	GetProducts(bool) ([]domain.Product, error)
 	GetProductById(uint64) (domain.Product, error)
 	GetProductsByName(string) ([]domain.Product, error)
-	// DeleteBookById(string) error
+	DeleteProductById(id uint64) error
 	CreateProduct(domain.Product) error
-	// UpdateBook(string, string, string, float64) error
 }
 type UserController interface {
 	SignUp(ctx context.Context, inp domain.SignUpInput) error

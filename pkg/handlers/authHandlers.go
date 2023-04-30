@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"strings"
 
@@ -18,28 +19,28 @@ type AuthHandler struct {
 	userController service.UserController
 }
 
-func NewAuthHandler(userController service.UserController) AuthHandler {
-	return AuthHandler{userController}
+func NewAuthHandler(userController service.UserController) *AuthHandler {
+	return &AuthHandler{userController}
 }
 func (s *AuthHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	reqBytes, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		panic(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		log.Println(err)
 	}
 	var inp domain.SignUpInput
-	if err = json.Unmarshal(reqBytes, &inp); err != nil { //форматирование в обьект
+	if err = json.Unmarshal(reqBytes, &inp); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		panic(err)
+		log.Println(err)
 	}
-	if err := inp.Validate(); err != nil { // валидируем джейсон который нам отправили
+	if err := inp.Validate(); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		panic(err)
+		log.Println(err)
 	}
 	err = s.userController.SignUp(r.Context(), inp)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		panic(err)
+		log.Println(err)
 	}
 	w.WriteHeader(http.StatusOK)
 
@@ -48,21 +49,21 @@ func (h *AuthHandler) Refresh(w http.ResponseWriter, r *http.Request) {
 	cookie, err := r.Cookie("refresh-token") //берем с куки рефреш токен
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		panic(err)
+		log.Println(err)
 	}
 	logrus.Infof("%s", cookie.Value)
 
 	accessToken, refreshToken, err := h.userController.RefreshTokens(r.Context(), cookie.Value) //новый рефреш и bearer токен
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		panic(err)
+		log.Println(err)
 	}
 	responce, err := json.Marshal(map[string]string{ //форматируем в джейсон
 		"token": accessToken,
 	})
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		panic(err)
+		log.Println(err)
 	}
 	w.Header().Add("Set-Cookie", fmt.Sprintf("refresh-token=%s; HttpOnly", refreshToken))
 	w.Header().Add("Content-Type", "application/json")
@@ -73,28 +74,28 @@ func (s *AuthHandler) SignIn(w http.ResponseWriter, r *http.Request) {
 	reqBytes, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		panic(err)
+		log.Println(err)
 	}
 	var inp domain.SignInInput
 	if err = json.Unmarshal(reqBytes, &inp); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		panic(err)
+		log.Println(err)
 	}
 	if err := inp.Validate(); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		panic(err)
+		log.Println(err)
 	}
 	accessToken, refreshToken, err := s.userController.SignIn(r.Context(), inp)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		panic(err)
+		log.Println(err)
 	}
 	responce, err := json.Marshal(map[string]string{
 		"token": accessToken,
 	})
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		panic(err)
+		log.Println(err)
 	}
 	w.Header().Add("Set-Cookie", fmt.Sprintf("refresh-token=%s; HttpOnly", refreshToken))
 	w.Header().Add("Content-Type", "application/json")
@@ -108,12 +109,12 @@ func (s *AuthHandler) AuthMiddleware(next http.Handler) http.Handler { //про�
 		token, err := getTokenFromRequest(r)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
-			panic(err)
+			log.Println(err)
 		}
 		userId, err := s.userController.ParseToken(r.Context(), token)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
-			panic(err)
+			log.Println(err)
 		}
 
 		var ctxUserId key

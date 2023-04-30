@@ -6,16 +6,17 @@ import (
 )
 
 type HandleFunctions struct {
-	Auth    handler.AuthHandler
-	Product handler.ProductHandler
-	Order   handler.OrderHandlers
+	Auth    *handler.AuthHandler
+	Product *handler.ProductHandler
+	Order   *handler.OrderHandlers
+	User    *handler.UserHandler
 }
 
-// создаем один общий хенлд класс, чтобы через него обращаться ко всем хендлерам
-func NewHandlers(db service.ProductDbActioner, userController *UserController, or service.Transactioner, token service.TokenDbActioner) *HandleFunctions {
-	b := handler.NewProductHandler(db)
-	o := handler.NewOrderHandler(or, db, token, userController)
-	u := handler.NewAuthHandler(userController)
+func NewHandlers(productDb service.ProductDbActioner, userController *UserController, or service.Transactioner, token service.TokenDbActioner, userDbController service.UserDbActioner) *HandleFunctions {
+	product := handler.NewProductHandler(productDb)
+	order := handler.NewOrderHandler(or, productDb, token, userController)
+	auth := handler.NewAuthHandler(userController)
+	user := handler.NewUserHandler(userController, userDbController, productDb)
 
-	return &HandleFunctions{u, b, o}
+	return &HandleFunctions{auth, product, order, user}
 }

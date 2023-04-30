@@ -29,7 +29,7 @@ func (p *ProductDBController) GetProductById(id uint64) (domain.Product, error) 
 		return product, nil
 	}
 
-	if err = p.db.FindOne(context.Background(), bson.M{"id": id}).Decode(&product); err != nil {
+	if err = p.db.FindOne(context.Background(), bson.M{"_id": id}).Decode(&product); err != nil {
 		return product, errors.New(fmt.Sprint("no product with this id :", id))
 	}
 
@@ -74,27 +74,7 @@ func (p *ProductDBController) CreateProduct(product domain.Product) error {
 	saveProductInRedis(p.redisClient, product)
 	return err
 }
-
-// func (r *BookstorePostgres) DeleteBookById(id string) error {
-// 	res := r.Db.Where("id=?", id).Delete(&domain.Book{})
-// 	return res.Error
-// }
-
-// func (r *BookstorePostgres) UpdateBook(id string, name string, desc string, price float64) error {
-// 	_, res := r.GetBookById(id)
-// 	if res == nil {
-// 		if name != "" {
-// 			book.Name = name
-// 		}
-// 		if desc != "" {
-// 			book.Description = desc
-// 		}
-// 		if price != 0 {
-// 			book.Price = price
-// 		}
-// 		res := r.Db.Save(&book)
-// 		saveBookInRedis(r.redisClient)
-// 		return res.Error
-// 	}
-// 	return res
-// }
+func (p *ProductDBController) DeleteProductById(id uint64) error {
+	_, err := p.db.DeleteOne(context.Background(), bson.M{"_id": id})
+	return err
+}
