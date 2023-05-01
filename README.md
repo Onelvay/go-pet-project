@@ -19,36 +19,34 @@ To start the project, follow these steps:
 
 ## Project structure
 <p>
-pet-project/
-├── config/
-│   └── handler/
-├── db/
-│   ├── mongoDB/
-│   └── postgres/
-├── payment/
-│   ├── Request/
-│   │   └── request.go
-│   └── client/
-│       └── client.go
-├── pkg/
-│   ├── controller/
-│   │   ├── handlers.go
-│   │   ├── redis.go
-│   │   ├── token.go
-│   │   ├── user.go
-│   │   └── postgres.go
-│   ├── domain/
-│   │   └── models.go
-│   ├── handlers/
-│   │   ├── handlers.go
-│   │   └── middleware.go
-│   ├── routes/
-│   │   └── routes.go
-│   └── service/
-│       ├── interfaces.go
-│       └── hash.go
-└── redis/
-    └── redis.go
-
-
+pet-project/ <br>
+├── config/<br>
+│   └── handler/<br>
+├── db/<br>
+│   ├── mongoDB/<br>
+│   └── postgres/<br>
+├── payment/<br>
+│   ├── Request/<br>
+│   │   └── request.go<br>
+│   └── client/<br>
+│       └── client.go<br>
+├── pkg/<br>
+│   ├── controller/<br>
+│   │   ├── handlers.go<br>
+│   │   ├── redis.go<br>
+│   │   ├── token.go<br>
+│   │   ├── user.go<br>
+│   │   └── postgres.go<br>
+│   ├── domain/<br>
+│   │   └── models.go<br>
+│   ├── handlers/<br>
+│   │   ├── handlers.go<br>
+│   │   └── middleware.go<br>
+│   ├── routes/<br>
+│   │   └── routes.go<br>
+│   └── service/<br>
+│       ├── interfaces.go<br>
+│       └── hash.go<br>
+└── redis/<br>
+    └── redis.go<br>
 </p>
