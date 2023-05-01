@@ -18,7 +18,7 @@ To start the project, follow these steps:
 * Simulation of payment via fondy
 
 ## Project structure
-
+<p>
 pet-project/
 ├── config/
 │   └── handler/
@@ -51,3 +51,4 @@ pet-project/
     └── redis.go
 
 
+</p>
