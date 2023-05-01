@@ -19,16 +19,14 @@ func InitRoutes(f *rest.HandleFunctions) *mux.Router {
 
 	user := router.PathPrefix("/profile").Subrouter()
 	{
+		user.Use(f.Auth.AuthMiddleware)
 		user.HandleFunc("/orders", f.User.GetOrders).Methods("Get")
 		user.HandleFunc("/orders", f.User.AddDetailToOrder).Methods("PUT")
 	}
 	products := router.PathPrefix("/products").Subrouter()
 	{
-		// products.Use(f.Auth.AuthMiddleware)
 		products.HandleFunc("", f.Product.GetProducts).Methods("GET")
 		products.HandleFunc("/{id}", f.Product.GetProductById).Methods("GET")
-		products.HandleFunc("/{id}", f.Product.DeleteProductById).Methods("DELETE")
-		products.HandleFunc("/create", f.User.CreateProduct).Methods("POST")
 	}
 
 	payment := router.PathPrefix("/order").Subrouter()
@@ -36,6 +34,9 @@ func InitRoutes(f *rest.HandleFunctions) *mux.Router {
 		payment.Use(f.Auth.AuthMiddleware)
 		payment.HandleFunc("", f.Order.CreateOrder).Methods("POST")
 		payment.HandleFunc("/callback", f.Order.Callback).Methods("POST")
+
+		products.HandleFunc("/{id}", f.Product.DeleteProductById).Methods("DELETE")
+		products.HandleFunc("/create", f.User.CreateProduct).Methods("POST")
 	}
 
 	return router

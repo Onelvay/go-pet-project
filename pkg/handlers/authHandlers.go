@@ -1,14 +1,11 @@
 package handlers
 
 import (
-	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
-	"strings"
 
 	"github.com/Onelvay/docker-compose-project/pkg/domain"
 	"github.com/Onelvay/docker-compose-project/pkg/service"
@@ -102,37 +99,24 @@ func (s *AuthHandler) SignIn(w http.ResponseWriter, r *http.Request) {
 	w.Write(responce)
 }
 
-type key int
+// type key int
 
-func (s *AuthHandler) AuthMiddleware(next http.Handler) http.Handler { //проверка на то что юзер залогинился
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		token, err := getTokenFromRequest(r)
-		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			log.Println(err)
-		}
-		userId, err := s.userController.ParseToken(r.Context(), token)
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			log.Println(err)
-		}
+// func (s *AuthHandler) AuthMiddleware(next http.Handler) http.Handler { //проверка на то что юзер залогинился
+// 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+// 		token, err := getTokenFromRequest(r)
+// 		if err != nil {
+// 			w.WriteHeader(http.StatusBadRequest)
+// 			log.Println(err)
+// 		}
+// 		userId, err := s.userController.ParseToken(r.Context(), token)
+// 		if err != nil {
+// 			w.WriteHeader(http.StatusInternalServerError)
+// 			log.Println(err)
+// 		}
 
-		var ctxUserId key
-		ctx := context.WithValue(r.Context(), ctxUserId, userId)
-		r = r.WithContext(ctx)
-		next.ServeHTTP(w, r)
-	})
-}
-func getTokenFromRequest(r *http.Request) (string, error) {
-	header := r.Header.Get("Authorization")
-	if header == "" {
-		return "", errors.New("empty auth header")
-	}
-
-	headerParts := strings.Split(header, " ")
-	if len(headerParts) != 2 {
-		fmt.Println(headerParts)
-		return "", errors.New("problems with bearer token")
-	}
-	return headerParts[1], nil
-}
+// 		var ctxUserId key
+// 		ctx := context.WithValue(r.Context(), ctxUserId, userId)
+// 		r = r.WithContext(ctx)
+// 		next.ServeHTTP(w, r)
+// 	})
+// }
