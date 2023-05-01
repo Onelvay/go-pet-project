@@ -21,32 +21,33 @@ To start the project, follow these steps:
 
 pet-project/
 ├── config/
-│ │ └── handler/
+│   └── handler/
 ├── db/
-│ ├── mongoDB/
-│ └── postgres/
+│   ├── mongoDB/
+│   └── postgres/
 ├── payment/
-│ ├── Request/
-│ │ │ ├── request.go
-│ └── client/
-│   └── client.go
+│   ├── Request/
+│   │   └── request.go
+│   └── client/
+│       └── client.go
 ├── pkg/
-│ ├── controller/
-│ │ │ ├── hadlers.go
-│ │ │ ├── redis.go
-│ │ │ ├── token.go
-│ │ │ ├── user.go
-│ │ │ └── postgres.go
-│ ├── domain/
-│ │ └── models.go
-│ ├── handlers/
-│ │ ├── handlers.go
-│ │ └── middlerware.go
-│ ├── routes/
-│ │ └── routes.go
-│ └── service/
-│   ├── Interfaces.go
-│   └── Hash.go
-├── redis/
-│ ├── redis.go
+│   ├── controller/
+│   │   ├── handlers.go
+│   │   ├── redis.go
+│   │   ├── token.go
+│   │   ├── user.go
+│   │   └── postgres.go
+│   ├── domain/
+│   │   └── models.go
+│   ├── handlers/
+│   │   ├── handlers.go
+│   │   └── middleware.go
+│   ├── routes/
+│   │   └── routes.go
+│   └── service/
+│       ├── interfaces.go
+│       └── hash.go
+└── redis/
+    └── redis.go
+
 
