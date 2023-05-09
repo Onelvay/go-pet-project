@@ -17,7 +17,7 @@ type Refresh_token struct {
 	Token     string `json:"token" gorm:"primaryKey"`
 	ExpiresAt time.Time
 
-	User User `gorm:"references:ID"`
+	User User `gorm:"references:id"`
 }
 
 type (

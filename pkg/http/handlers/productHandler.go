@@ -20,17 +20,17 @@ func NewProductHandler(db service.ProductDbActioner) *ProductHandler {
 }
 
 func (s *ProductHandler) GetProducts(w http.ResponseWriter, r *http.Request) { //ниже все понятно думаю
-	URLsort := r.URL.Query().Get("sort")
+	querySort := r.URL.Query().Get("sort")
 	products, err := s.db.GetProducts()
 	for i, v := range products {
 		rating := s.db.GetProductRating(uint(v.Id))
 		products[i].Rating = rating
 	}
-	if URLsort == "rating" {
+	if querySort == "rating" {
 		sort.Slice(products, func(i, j int) bool {
 			return products[i].Rating > products[j].Rating
 		})
-	} else if URLsort == "price" {
+	} else if querySort == "price" {
 		sort.Slice(products, func(i, j int) bool {
 			return products[i].Price > products[j].Price
 		})
@@ -40,7 +40,14 @@ func (s *ProductHandler) GetProducts(w http.ResponseWriter, r *http.Request) { /
 		http.Error(w, fmt.Sprint(err), http.StatusInternalServerError)
 		return
 	}
-	json.NewEncoder(w).Encode(products)
+	js, err := json.Marshal(products)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(js)
+	w.WriteHeader(http.StatusOK)
 }
 func (s *ProductHandler) GetProductById(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["id"]
@@ -54,8 +61,14 @@ func (s *ProductHandler) GetProductById(w http.ResponseWriter, r *http.Request) 
 		http.Error(w, fmt.Sprint(err), http.StatusBadRequest)
 		return
 	}
+	js, err := json.Marshal(product)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(js)
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(product)
 
 }
 func (s *ProductHandler) GetProductsByName(w http.ResponseWriter, r *http.Request) {
@@ -65,7 +78,14 @@ func (s *ProductHandler) GetProductsByName(w http.ResponseWriter, r *http.Reques
 		http.Error(w, fmt.Sprint(err), http.StatusNotFound)
 		return
 	}
-	json.NewEncoder(w).Encode(products)
+	js, err := json.Marshal(products)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(js)
+	w.WriteHeader(http.StatusOK)
 }
 
 func (s *ProductHandler) DeleteProductById(w http.ResponseWriter, r *http.Request) {

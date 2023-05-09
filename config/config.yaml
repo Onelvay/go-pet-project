@@ -1,5 +1,5 @@
 db:
-  host: "postgres"
+  host: "localhost"
   user: "postgres"
   dbname: "bookstore"
   port: "5432"
@@ -15,9 +15,9 @@ payment:
   merchantPassword: "test"
 
 redis:
-  host: "redis:6379"
+  host: "localhost:6379"
   password: ""
   db: 
 
 mongoDB:
-  host: "mongodb://mongoDb:27017"
+  host: "mongodb://localhost:27017"

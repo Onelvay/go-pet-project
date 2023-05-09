@@ -18,8 +18,8 @@ To start the project, follow these steps:
 * Simulation of payment via fondy
 
 ## Project structure
-<p>
-pet-project/
+
+pet-project/ 
 ├── config/
 │   └── handler/
 ├── db/
@@ -50,5 +50,14 @@ pet-project/
 └── redis/
     └── redis.go
 
+Sign-in:
 
-</p>
+![img_1.png](img/img_1.png)
+
+Sign-up:
+
+![img.png](img/img.png)
+
+Purchasing item:
+
+![img_2.png](img/img_2.png)

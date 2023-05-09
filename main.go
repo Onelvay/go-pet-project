@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	routes "github.com/Onelvay/docker-compose-project/pkg/http/routes"
 	"log"
 	"net/http"
 	"os"
@@ -10,7 +11,6 @@ import (
 	"github.com/Onelvay/docker-compose-project/db/postgres"
 	"github.com/Onelvay/docker-compose-project/payment/client"
 	contr "github.com/Onelvay/docker-compose-project/pkg/controller"
-	routes "github.com/Onelvay/docker-compose-project/pkg/routes"
 	"github.com/Onelvay/docker-compose-project/pkg/service"
 	redisClient "github.com/Onelvay/docker-compose-project/redis"
 	"github.com/go-redis/redis"

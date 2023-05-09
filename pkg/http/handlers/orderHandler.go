@@ -77,7 +77,7 @@ func (s *OrderHandlers) CreateOrder(w http.ResponseWriter, r *http.Request) {
 		Amount:            price,
 		ProductId:         fmt.Sprint(product.Id),
 		Currency:          "USD",
-		ServerCallbackURL: "https://9beb-109-239-34-71.ngrok-free.app/order/callback",
+		ServerCallbackURL: "https://a3e1-109-239-34-71.ngrok-free.app/order/callback",
 	}
 	api, err := client.CreateOrder(*checkoutRequest)
 	if err != nil {
@@ -89,8 +89,14 @@ func (s *OrderHandlers) CreateOrder(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		log.Println(err)
 	}
-	json.NewEncoder(w).Encode(api)
-
+	js, err := json.Marshal(api)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(js)
+	w.WriteHeader(http.StatusOK)
 }
 
 func (s *OrderHandlers) Callback(w http.ResponseWriter, r *http.Request) { //принятие платежа

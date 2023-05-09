@@ -11,7 +11,7 @@ import (
 
 type key int
 
-func (s *AuthHandler) AuthMiddleware(next http.Handler) http.Handler { //проверка на то что юзер залогинился
+func (s *AuthHandler) AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		token, err := getTokenFromRequest(r)
 		if err != nil {

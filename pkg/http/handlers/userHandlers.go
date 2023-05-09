@@ -36,7 +36,14 @@ func (u *UserHandler) GetOrders(w http.ResponseWriter, r *http.Request) {
 		}
 		products = append(products, product)
 	}
-	json.NewEncoder(w).Encode(products)
+	js, err := json.Marshal(products)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(js)
+	w.WriteHeader(http.StatusOK)
 }
 func (u *UserHandler) AddDetailToOrder(w http.ResponseWriter, r *http.Request) {
 	bytes, err := ioutil.ReadAll(r.Body)
@@ -82,7 +89,7 @@ func (u *UserHandler) CreateProduct(w http.ResponseWriter, r *http.Request) {
 	}
 	inp.Id = uintTime
 	userId := getUserIdFromBearerToken(w, r, u.userController)
-	inp.User_id = userId
+	inp.Seller = userId
 	err = u.productDb.CreateProduct(inp)
 	if err != nil {
 		http.Error(w, fmt.Sprint(err), http.StatusInternalServerError)
