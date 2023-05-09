@@ -18,6 +18,7 @@ To start the project, follow these steps:
 * Simulation of payment via fondy
 
 ## Project structure
+<<<<<<< HEAD
 
 pet-project/ 
 ├── config/
@@ -61,3 +62,37 @@ Sign-up:
 Purchasing item:
 
 ![img_2.png](img/img_2.png)
+=======
+<p>
+pet-project/ <br>
+├── config/<br>
+│   └── handler/<br>
+├── db/<br>
+│   ├── mongoDB/<br>
+│   └── postgres/<br>
+├── payment/<br>
+│   ├── Request/<br>
+│   │   └── request.go<br>
+│   └── client/<br>
+│       └── client.go<br>
+├── pkg/<br>
+│   ├── controller/<br>
+│   │   ├── handlers.go<br>
+│   │   ├── redis.go<br>
+│   │   ├── token.go<br>
+│   │   ├── user.go<br>
+│   │   └── postgres.go<br>
+│   ├── domain/<br>
+│   │   └── models.go<br>
+│   ├── handlers/<br>
+│   │   ├── handlers.go<br>
+│   │   └── middleware.go<br>
+│   ├── routes/<br>
+│   │   └── routes.go<br>
+│   └── service/<br>
+│       ├── interfaces.go<br>
+│       └── hash.go<br>
+└── redis/<br>
+    └── redis.go<br>
+</p>
+>>>>>>> 08a18cc8b6936ab010b9e2c0f70dee717705bd4a
